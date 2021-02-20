@@ -36,6 +36,7 @@ storage_client = storage.Client()
 bucket = storage_client.get_bucket(bucket_name)
 blobs = bucket.list_blobs(prefix = training_folder, delimiter='/')
 
+print("Starting processing...")
 for blob in tqdm(list(blobs)):
     # download segment
     filename = blob.name.replace(training_folder,"")
