@@ -1,0 +1,7 @@
+README.md
+setup.py
+herbie_vision.egg-info/PKG-INFO
+herbie_vision.egg-info/SOURCES.txt
+herbie_vision.egg-info/dependency_links.txt
+herbie_vision.egg-info/requires.txt
+herbie_vision.egg-info/top_level.txt
