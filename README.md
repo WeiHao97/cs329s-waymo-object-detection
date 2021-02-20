@@ -1,4 +1,4 @@
-# Waymo-2D-Object-Detection
+# Herbie Vision
 <p float="left">
   <img src="assets/Stanford-Logo.png" width="300">
   <img src="assets/waymo.jpeg" width="300">
