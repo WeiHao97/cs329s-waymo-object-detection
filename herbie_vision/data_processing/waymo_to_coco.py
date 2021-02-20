@@ -18,8 +18,8 @@ from google.cloud import storage
 # Task: create config file to store these options
 bucket_name = "waymo-raw-data"
 processed_bucket = "waymo-processed"
-root_directory = "/home/jupyter/"
-temp_directory = "/home/jupyter/temp/"
+root_directory = "/home/waymo/"
+temp_directory = "/home/waymo/temp/"
 training_folder = "waymo_open_dataset_v_1_2_0_individual_files/training/"
 
 # utility function
