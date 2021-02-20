@@ -3,6 +3,55 @@ import cv2
 import random
 
 
+def create_mask(bb, x):
+    """Creates a mask for the bounding box of same shape as image"""
+    rows,cols,*_ = x.shape
+    Y = np.zeros((rows, cols))
+    bb = bb.astype(int)
+    Y[bb[0]:bb[2], bb[1]:bb[3]] = 1.
+    return Y
+
+def mask_to_bb(Y):
+    """Convert mask Y to a bounding box, assumes 0 as background nonzero object"""
+    cols, rows = np.nonzero(Y)
+    if len(cols)==0: 
+        return np.zeros(4, dtype=np.float32)
+    top_row = np.min(rows)
+    left_col = np.min(cols)
+    bottom_row = np.max(rows)
+    right_col = np.max(cols)
+    return np.array([left_col, top_row, right_col, bottom_row], dtype=np.float32)
+
+
+def resize_image_bb(read_path,write_path,bb,sz):
+    """Resize an image and its bounding box and write image to new path"""
+    im = np.array(Image.open(read_path))
+    im_resized = cv2.resize(im, (sz, sz))
+    Y_resized = cv2.resize(create_mask(bb, im), (sz, sz))
+    new_path = write_path + read_path.split('/')[-1]
+    cv2.imwrite(new_path, cv2.cvtColor(im_resized, cv2.COLOR_RGB2BGR))
+    return new_path, mask_to_bb(Y_resized)
+
+
+def process_resizing(resized_path, annotations_df, sz):
+    new_paths = []
+    new_bbs = []
+    train_path_resized = 
+    for index, row in annotations_df[['filename','x_min','y_min','x_max','y_max']].iterrows():
+        new_path,new_bb = resize_image_bb(row['filename'], resized_path,
+                                          np.array(row[['x_min','y_min','x_max','y_max']]),sz)
+        new_paths.append(new_path)
+        new_bbs.append(new_bb)
+    annotations_df['processed_filepath'] = new_paths
+    annotations_df['new_bb'] = new_bbs
+    
+    return annotations_df
+
+
+
+
+# Code taken from elsewhere
+
 def flip(img):
   return img[:, :, ::-1].copy()
 
