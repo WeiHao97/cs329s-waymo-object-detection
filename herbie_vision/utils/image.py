@@ -1,6 +1,8 @@
+import os
 import numpy as np
 import cv2
 import random
+from PIL import Image
 import pandas as pd
 
 def annotations_to_df(annotations):

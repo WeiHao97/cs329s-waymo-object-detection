@@ -1,9 +1,11 @@
-from streamlit_app import homepage
+from streamlit_app import application
+from streamlit_app import report
 from streamlit_app import about
 import streamlit as st
 
 PAGES = {
-    "Homepage": homepage,
+    "Application": application,
+    "Report":report,
     "About": about
 }
 

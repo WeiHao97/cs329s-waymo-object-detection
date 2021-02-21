@@ -1,7 +1,7 @@
 .DS_Store
-images/
-images_processed/
+data/
 annotations.json
+annotations.csv
 # WANDB
 wandb/
 # Byte-compiled / optimized / DLL files
