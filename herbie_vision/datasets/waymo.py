@@ -50,7 +50,7 @@ class WaymoDataset(data.Dataset):
                            self.gcp_annotations_path,
                            '/content/data/annotations.json')
         
-        f = open('./data/annotations.json','r')
+        f = open('/content/data/annotations.json','r')
         self.annotations = json.load(f)
         f.close()
         
