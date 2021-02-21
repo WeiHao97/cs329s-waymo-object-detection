@@ -49,7 +49,7 @@ class WaymoDataset(data.Dataset):
         client = storage.Client()
         bucket = client.get_bucket(self.gcp_bucket)
         
-        self.download_blob(self.gcp_bucket,
+        download_blob(self.gcp_bucket,
                            self.gcp_annotations_path,
                            './data/annotations.json')
         
@@ -77,11 +77,11 @@ class WaymoDataset(data.Dataset):
         
         
         # Download images for segments to local folder
-#         for segment in self.segment_paths:
-#             blobs = bucket.list_blobs(prefix=segment, delimiter='/')
-#             for blob in list(blobs):
-#                 filename=blob.name.replace(segment,'')
-#                 blob.download_to_filename('./data/images/{}'.format(filename))
+        for segment in self.segment_paths:
+            blobs = bucket.list_blobs(prefix=segment, delimiter='/')
+            for blob in list(blobs):
+                filename=blob.name.replace(segment,'')
+                blob.download_to_filename('./data/images/{}'.format(filename))
 
 
         # Preprocess images to be the same size
