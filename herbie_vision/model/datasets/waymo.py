@@ -1,21 +1,8 @@
-# Under developement
-
 from PIL import Image
 import numpy as np
-import torchvision.transforms as transforms
+from herbie_vision.utils.image import annotations_to_df, process_resizing
+from herbie_vision.utils.gcp_utils import download_blob ,upload_blob
 
-def download_blob(bucket_name, source_blob_name, destination_file_name):
-    """Downloads a blob from the bucket."""
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(source_blob_name)
-    blob.download_to_filename(destination_file_name)
-
-    print(
-        "Blob {} downloaded to {}.".format(
-            source_blob_name, destination_file_name
-        )
-    )
     
 
 CATEGORY_NAMES = ['TYPE_VEHICLE','TYPE_PEDESTRIAN','TYPE_CYCLIST']
@@ -86,12 +73,8 @@ class WaymoDataset(data.Dataset):
 
         # Preprocess images to be the same size
         self.annotations_df = process_resizing(self.path_to_processed_images, annotations_df,800)
-        annotations_df['xn_min'] = annotations_df['new_bb'].apply(lambda x: x[0])
-        annotations_df['yn_min'] = annotations_df['new_bb'].apply(lambda x: x[1])
-        annotations_df['xn_max'] = annotations_df['new_bb'].apply(lambda x: x[2])
-        annotations_df['ym_max'] = annotations_df['new_bb'].apply(lambda x: x[3])
         
-            
+
     def __getitem__(self, idx):
         image_url = self.annotations['images'][idx]['gcp_url']
         filename = image_url.split('/')[-1]

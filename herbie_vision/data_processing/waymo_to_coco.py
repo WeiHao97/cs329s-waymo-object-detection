@@ -13,6 +13,7 @@ from waymo_open_dataset.utils import  frame_utils
 from waymo_open_dataset import dataset_pb2 as open_dataset
 
 from google.cloud import storage
+from herbie_vision.utils.gcp_utils import download_blob ,upload_blob
 
 
 # Task: create config file to store these options
@@ -22,13 +23,6 @@ root_directory = "/home/waymo/"
 temp_directory = "/home/waymo/temp/"
 training_folder = "waymo_open_dataset_v_1_2_0_individual_files/training/"
 
-# utility function
-def upload_blob(bucket_name, source_file_name, destination_blob_name):
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(destination_blob_name)
-
-    blob.upload_from_filename(source_file_name)
 
 # Task wrap this logic in a function
 # Connect to gcp storage
