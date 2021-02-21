@@ -17,7 +17,7 @@ from google.cloud import storage
 
 # Read in script arguments
 parser = argparse.ArgumentParser(description='Convert waymo dataset to coco data format in GCP.')
-parser.add_argument('path_to_config' type=str,
+parser.add_argument('path_to_config', type=str,
                     help='path to configuration file')
 args = parser.parse_args()
 
