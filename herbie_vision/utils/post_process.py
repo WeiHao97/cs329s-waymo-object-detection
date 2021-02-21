@@ -5,6 +5,13 @@ import torch.nn.functional as F
 from herbie_vision.utils.utils import _gather_feature, _tranpose_and_gather_feature, flip_tensor # alter import for now
 
 
+# FastRCNN
+
+
+
+
+
+# Centernet code
 def _nms(heat, kernel=3):
   hmax = F.max_pool2d(heat, kernel, stride=1, padding=(kernel - 1) // 2)
   keep = (hmax == heat).float()

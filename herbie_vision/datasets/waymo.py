@@ -23,6 +23,9 @@ from google.cloud import storage
 CATEGORY_NAMES = ['TYPE_VEHICLE','TYPE_PEDESTRIAN','TYPE_CYCLIST']
 CATEGORY_IDS = [1,2,4]
 
+def collate_fn(batch):
+    return tuple(zip(*batch))
+
 class WaymoDataset(data.Dataset):
     def __init__(self, gcp_bucket, gcp_annotations_path, local_path_to_images, 
                  local_path_to_processed_images, cat_names, cat_ids):

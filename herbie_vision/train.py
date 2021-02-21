@@ -1,12 +1,19 @@
+import sys
+import os
+
 import torch
+import torch.utils.data as data
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
-from herbie_vision.datasets.waymo import WaymoDataset
+from herbie_vision.datasets.waymo import WaymoDataset, collate_fn
+from herbie_vision.utils 
 
 import wandb
 
 wandb.init(project='waymo-2d-object-detection', entity='peterdavidfagan', name='FassRCNNTest')
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] =  
+
 
 def get_model_instance_segmentation(num_classes):
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=False)
@@ -29,7 +36,7 @@ optimizer = torch.optim.SGD(params, lr=0.005, momentum=0.9, weight_decay=0.0005)
 
 # Initialize dataset
 dataset = WaymoDataset('waymo-processed','train/annotations/2019-02-13/10017090168044687777_6380_000_6400_000.json','./data/images/','./data/images_processed/', CATEGORY_NAMES, CATEGORY_IDS)
-train_dataloader = data.DataLoader(dataset, batch_size=8)
+train_dataloader = data.DataLoader(dataset, batch_size=8, collate_fn=collate_fn)
 len_dataloader = len(train_dataloader)
 
 

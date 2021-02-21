@@ -3,6 +3,7 @@ import torch.nn as nn
 from collections import OrderedDict
 
 
+#Centernet code
 def _gather_feature(feat, ind, mask=None):
   dim = feat.size(2)
   ind = ind.unsqueeze(2).expand(ind.size(0), ind.size(1), dim)
