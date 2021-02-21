@@ -36,8 +36,8 @@ class WaymoDataset(data.Dataset):
         
         
         # setup data directory
-        if os.path.exists('./data')==False:
-            os.mkdir('./data')
+        if os.path.exists('/content/data')==False:
+            os.mkdir('/content/data')
             os.mkdir(self.local_path_to_images)
             os.mkdir(self.local_path_to_processed_images)
         
@@ -48,7 +48,7 @@ class WaymoDataset(data.Dataset):
         
         download_blob(self.gcp_bucket,
                            self.gcp_annotations_path,
-                           './data/annotations.json')
+                           '/content/data/annotations.json')
         
         f = open('./data/annotations.json','r')
         self.annotations = json.load(f)
@@ -72,7 +72,7 @@ class WaymoDataset(data.Dataset):
             blobs = bucket.list_blobs(prefix=segment, delimiter='/')
             for blob in list(blobs):
                 filename=blob.name.replace(segment,'')
-                blob.download_to_filename('./data/images/{}'.format(filename))
+                blob.download_to_filename('/content/data/images/{}'.format(filename))
 
 
         # Drop images without annotations
