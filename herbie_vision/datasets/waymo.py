@@ -38,8 +38,8 @@ class WaymoDataset(data.Dataset):
         # setup data directory
         if os.path.exists('./data')==False:
             os.mkdir('./data')
-            os.mkdir(self.path_to_images)
-            os.mkdir(self.path_to_processed_images)
+            os.mkdir(self.local_path_to_images)
+            os.mkdir(self.local_path_to_processed_images)
         
         
         # read in annotations
