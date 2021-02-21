@@ -48,8 +48,6 @@ def process_resizing(resized_path, annotations_df, sz):
     return annotations_df
 
 
-
-
 # Code taken from elsewhere
 
 def flip(img):

@@ -45,7 +45,7 @@ for blob in tqdm(list(blobs)):
 
     # define annotations for a given segment
     annotations = {
-            "info":{"description":"Waymo Open Data - {}".format(segment_name)},
+            "info":{"description":"Waymo Open Data - {}".format(filename)},
             "licenses":{},
             "images":[],
             "annotations":[],
@@ -94,8 +94,8 @@ for blob in tqdm(list(blobs)):
                     continue
                 else:                     # Iterate over the individual labels.
                     for label in camera_labels.labels:
-                        bbox = [label.box.center_x - (label.box.width/2.0), 
-                                label.box.center_y - (label.box.length/2.0), 
+                        bbox = [label.box.center_x - (0.5*label.box.length), 
+                                label.box.center_y - (0.5*label.box.width), 
                                 label.box.width, label.box.length]
                         annotations["annotations"].append({"id":label.id, 
                                                    "category_id":label.type,
