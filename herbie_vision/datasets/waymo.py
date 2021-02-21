@@ -96,6 +96,7 @@ class WaymoDataset(data.Dataset):
         image_url = self.annotations['images'][idx]['gcp_url']
         filename = image_url.split('/')[-1]
         image = Image.open(self.local_path_to_processed_images+'{}'.format(filename))
+        image = np.asarray(image, dtype="float64") / 255.
         image = torch.tensor(image).permute(2,0,1).float()        
         
         # define target data for fast rcnn
