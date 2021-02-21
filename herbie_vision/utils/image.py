@@ -5,9 +5,9 @@ import random
 from PIL import Image
 import pandas as pd
 
-def annotations_to_df(annotations):
+def annotations_to_df(annotations, train_path):
     df = pd.DataFrame(annotations['annotations'])
-    df['filename'] = df['image_id'].apply(lambda x :os.getcwd()+'/data/images/{}.jpeg'.format(x))
+    df['filename'] = df['image_id'].apply(lambda x :train_path+'{}.jpeg'.format(x))
     df['x_min'] = df['bbox'].apply(lambda x: x[0])
     df['y_min'] = df['bbox'].apply(lambda x: x[1])
     df['width'] = df['bbox'].apply(lambda x: x[2])

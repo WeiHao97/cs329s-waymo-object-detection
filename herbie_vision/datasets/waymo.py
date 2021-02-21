@@ -1,3 +1,8 @@
+##########################################################
+# Path Vars for this script need to be refactored.
+##########################################################
+
+
 import os
 import sys
 import json
@@ -55,7 +60,7 @@ class WaymoDataset(data.Dataset):
         f.close()
         
         # convert annotations to dataframe
-        self.annotations_df = annotations_to_df(self.annotations)
+        self.annotations_df = annotations_to_df(self.annotations, self.local_path_to_images)
 
         
         # determine segment paths
