@@ -1,7 +1,7 @@
 # Herbie Vision
 <p float="left">
   <img src="assets/herbie.jpg" width="300">
-  <img src="assets/herbie_half.jpg" width="300">
+  <img src="assets/waymo.jpeg" width="300">
 </p>
 
 <H1>Introduction</H1>
