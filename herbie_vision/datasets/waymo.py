@@ -15,6 +15,12 @@ from herbie_vision.utils.gcp_utils import download_blob, upload_blob
 from google.cloud import storage
 
 
+# Read in script arguments
+parser = argparse.ArgumentParser(description='Convert waymo dataset to coco data format in GCP.')
+parser.add_argument('path_to_config' type=str,
+                    help='path to configuration file')
+args = parser.parse_args()
+
 # Read in config file
 with open(args['path_to_config']) as file:
     config = yaml.load(file, Loader=yaml.FullLoader)
