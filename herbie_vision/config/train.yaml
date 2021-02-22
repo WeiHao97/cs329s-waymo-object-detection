@@ -12,6 +12,7 @@ learning_rate: 0.00005
 momentum: 0.9
 weight_decay: 0.0005
 batch_size: 16
+resize: 1800
 
 # Datasets
 train_dataset: 'train/annotations/2019-05-22/11940460932056521663_1760_000_1780_000.json'

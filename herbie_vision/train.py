@@ -35,7 +35,7 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
         rpn_losses = []
         for imgs, annotations in tqdm(train_dataloader):
             # Push data to device
-            imgs = list(img.to(device) for img in imgs)
+            imgs = [img.to(device) for img in imgs]
             annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
             
             # Perform forward pass
@@ -98,7 +98,7 @@ if __name__=="__main__":
 
     # Initialize datasets + folders
     train_dataset = WaymoDataset('waymo-processed',train_config['train_dataset'],train_config['root'], 'train',
-                                train_config['category_names'], train_config['category_ids'])
+                                train_config['category_names'], train_config['category_ids'], train_config['resize'])
     train_dataloader = data.DataLoader(train_dataset, batch_size=train_config['batch_size'], collate_fn=collate_fn)
 
     valid_dataset = WaymoDataset('waymo-processed', train_config['valid_dataset'],train_config['root'],

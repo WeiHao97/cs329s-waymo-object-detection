@@ -20,7 +20,7 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 class WaymoDataset(data.Dataset):
-    def __init__(self, gcp_bucket, gcp_annotations_path, root_dir, dataset_type, cat_names, cat_ids):
+    def __init__(self, gcp_bucket, gcp_annotations_path, root_dir, dataset_type, cat_names, cat_ids, resize):
         super(WaymoDataset, self).__init__()
         
         # filepaths
@@ -36,7 +36,8 @@ class WaymoDataset(data.Dataset):
         self.num_classes = len(cat_names)
         self.category_names = cat_names
         self.category_ids = cat_ids
-        
+        self.resize = resize
+
         # read in annotations
         client = storage.Client()
         bucket = client.get_bucket(self.gcp_bucket)        
@@ -83,7 +84,7 @@ class WaymoDataset(data.Dataset):
 
             # Preprocess images to be the same size
             print('Processing images...')
-            self.annotations_df = process_resizing(self.local_path_to_processed_images, self.annotations_df,800)
+            self.annotations_df = process_resizing(self.local_path_to_processed_images, self.annotations_df,resize)
             self.annotations_df.to_csv(self.root_dir+ self.dataset_type + '/processed_annotations.csv' )
         else:
             self.annotations_df = pd.read_csv(self.root_dir+ self.dataset_type + '/processed_annotations.csv')
@@ -126,6 +127,7 @@ class WaymoDataset(data.Dataset):
         target["labels"] = labels
         target["image_id"] = torch.tensor(idx)
         target["area"] = areas
+        target["iscrowd"] = torch.zeros((temp_df.shape[0],), dtype=torch.int64)
         
         return image, target
     
