@@ -88,6 +88,9 @@ class WaymoDataset(data.Dataset):
         # Drop images without annotations
         self.annotations['images'] = [x for x in self.annotations['images'] if x['id'] in self.annotations_df['image_id'].unique()]
         
+        # Drop boinding boxes which get reduced too much by resizing
+        self.annotations_df['r_area'] = (self.annotations_df['xr_max'] - self.annotations['xr_min'])*(self.annotations_df['yr_max'] - self.annotations['yr_min'])
+        self.annotations_df = self.annotations_df[self.annotations_df['r_area']>=0]
         
         
             
