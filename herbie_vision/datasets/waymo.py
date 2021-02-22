@@ -90,7 +90,7 @@ class WaymoDataset(data.Dataset):
         
         # Drop bounding boxes which get reduced too much by resizing
         self.annotations_df['r_area'] = (self.annotations_df['xr_max'] - self.annotations_df['xr_min'])*(self.annotations_df['yr_max'] - self.annotations_df['yr_min'])
-        self.annotations_df = self.annotations_df[self.annotations_df['r_area']<=0]
+        self.annotations_df = self.annotations_df[self.annotations_df['r_area']>0]
         
         
             
