@@ -124,7 +124,7 @@ class WaymoDataset(data.Dataset):
         target = {}
         target["boxes"] = boxes
         target["labels"] = labels
-        target["image_id"] = image_id
+        target["image_id"] = torch.tensor(idx).to(device)
         target["area"] = areas
         
         return image, target
