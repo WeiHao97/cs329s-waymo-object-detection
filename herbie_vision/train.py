@@ -48,11 +48,11 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
             optimizer.step()
 
             # Track loss
-            total_losses.append(sum(loss_dict.values()))
-            classifier_losses.append(loss_dict['loss_classifier'])
-            box_reg_losses.append(loss_dict['loss_box_reg'])
-            objectness_losses.append(loss_dict['loss_objectness'])
-            rpn_losses.append(loss_dict['loss_rpn_box_reg'])
+            total_losses.append(sum(loss_dict.values().detach().to('cpu').numpy()))
+            classifier_losses.append(loss_dict['loss_classifier'].detach().to('cpu').numpy())
+            box_reg_losses.append(loss_dict['loss_box_reg'].detach().to('cpu').numpy())
+            objectness_losses.append(loss_dict['loss_objectness'].detach().to('cpu').numpy())
+            rpn_losses.append(loss_dict['loss_rpn_box_reg'].detach().to('cpu').numpy())
 
         lr_scheduler.step()
 
