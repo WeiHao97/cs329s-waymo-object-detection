@@ -86,7 +86,7 @@ if __name__=="__main__":
 
     # Resolve external dependencies
     wandb.init(project=base_config['project'], entity=base_config['entity'], name=base_config['run_name'])
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] =  base_config['gcp_credentials']
+    # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] =  base_config['gcp_credentials']
 
 
     # Initialize datasets + folders

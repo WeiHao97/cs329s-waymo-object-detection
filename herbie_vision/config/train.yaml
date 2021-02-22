@@ -1,5 +1,5 @@
 # Directories
-root: '/Users/peterfagan/Code/herbie-vision/herbie_vision/data/'
+root: '/content/data/'
 
 # Categories
 category_names: ['TYPE_VEHICLE','TYPE_PEDESTRIAN','TYPE_CYCLIST']
