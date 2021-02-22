@@ -93,6 +93,8 @@ if __name__=="__main__":
 
     # Resolve external dependencies
     wandb.init(project=base_config['project'], entity=base_config['entity'], name=base_config['run_name'])
+    
+    # Omit while testing on colab
     # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] =  base_config['gcp_credentials']
 
 
@@ -101,9 +103,10 @@ if __name__=="__main__":
                                 train_config['category_names'], train_config['category_ids'], train_config['resize'])
     train_dataloader = data.DataLoader(train_dataset, batch_size=train_config['batch_size'], collate_fn=collate_fn)
 
-    valid_dataset = WaymoDataset('waymo-processed', train_config['valid_dataset'],train_config['root'],
-                                'valid', train_config['category_names'], train_config['category_ids'])
-    valid_dataloader = data.DataLoader(valid_dataset, batch_size=config['batch_size'], collate_fn=collate_fn)
+    # Omit these while testing scripts
+    # valid_dataset = WaymoDataset('waymo-processed', train_config['valid_dataset'],train_config['root'],
+    #                             'valid', train_config['category_names'], train_config['category_ids'])
+    # valid_dataloader = data.DataLoader(valid_dataset, batch_size=config['batch_size'], collate_fn=collate_fn)
 
     # test_dataset = WaymoDataset('waymo-processed', train_config['test_dataset'], train_config['root'], 
     #                             'test', train_config['category_names'], train_config['category_ids'])

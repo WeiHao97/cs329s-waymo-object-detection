@@ -64,6 +64,8 @@ class WaymoDataset(data.Dataset):
             print('Downloading and processing images...')
             # convert annotations to dataframe
             self.annotations_df = annotations_to_df(self.annotations, self.local_path_to_images)
+            self.annotations_df['category_id'] = self.annotations_df['category_id'].apply(lambda x: 3 if x==4 else x) # map so categorise are contiguous
+
 
             
             # determine segment paths
@@ -89,12 +91,14 @@ class WaymoDataset(data.Dataset):
         else:
             self.annotations_df = pd.read_csv(self.root_dir+ self.dataset_type + '/processed_annotations.csv')
 
+        # Drop bounding boxes which get reduced too much by resizing
+        self.annotations_df['r_area'] = (self.annotations_df['xr_max'] - self.annotations_df['xr_min'])*(self.annotations_df['yr_max'] - self.annotations_df['yr_min'])
+        self.annotations_df = self.annotations_df[self.annotations_df['r_area']>10]
+        
+
         # Drop images without annotations
         self.annotations['images'] = [x for x in self.annotations['images'] if x['id'] in self.annotations_df['image_id'].unique()]
         
-        # Drop bounding boxes which get reduced too much by resizing
-        self.annotations_df['r_area'] = (self.annotations_df['xr_max'] - self.annotations_df['xr_min'])*(self.annotations_df['yr_max'] - self.annotations_df['yr_min'])
-        self.annotations_df = self.annotations_df[self.annotations_df['r_area']>0]
         
         
             
