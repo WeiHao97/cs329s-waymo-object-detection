@@ -21,23 +21,27 @@ from herbie_vision.utils.gcp_utils import download_blob, upload_blob
 
 # Read in script arguments
 parser = argparse.ArgumentParser(description='Convert waymo dataset to coco data format in GCP.')
-parser.add_argument('path_to_config', type=str,
+parser.add_argument('path_to_base_config', type=str,
+                    help='path to configuration file')
+parser.add_argument('path_to_data_config', type=str,
                     help='path to configuration file')
 args = parser.parse_args()
 
 
 # Read in config file
-with open(args['path_to_config']) as file:
-    config = yaml.load(file, Loader=yaml.FullLoader)
+with open(args['path_to_base_config']) as file:
+    base_config = yaml.load(file, Loader=yaml.FullLoader)
+with open(args['path_to_base_data_config']) as file:
+    data_config = yaml.load(file, Loader=yaml.FullLoader)
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] =  config['gcp_credentials']
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] =  base_config['gcp_credentials']
 
 # Task: create config file to store these options
-bucket_name = config['gcp_waymo_raw_data_bucket']
-processed_bucket = config['gcp_waymo_processed_data_bucket']
-root_directory = config['root_directory']
-temp_directory = config['temp_directory']
-training_folder = config['waymo_training_path']
+bucket_name = data_config['gcp_waymo_raw_data_bucket']
+processed_bucket = data_config['gcp_waymo_processed_data_bucket']
+root_directory = data_config['root_directory']
+temp_directory = data_config['temp_directory']
+training_folder = data_config['waymo_training_path']
 
 
 # Task wrap this logic in a function

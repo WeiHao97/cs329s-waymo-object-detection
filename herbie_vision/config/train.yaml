@@ -1,0 +1,18 @@
+# Directories
+root: '/Users/peterfagan/Code/herbie-vision/herbie_vision/data/'
+
+# Categories
+category_names: ['TYPE_VEHICLE','TYPE_PEDESTRIAN','TYPE_CYCLIST']
+category_ids: [1,2,4]
+
+# Basic hyperparameters
+num_epochs: 10
+num_classes: 4
+learning_rate: 0.00005
+momentum: 0.9
+weight_decay: 0.0005
+
+# Datasets
+train_dataset: 'train/annotations/2019-05-22/11940460932056521663_1760_000_1780_000.json'
+test_dataset: 'test/annotations/2019-06-01/2942662230423855469_880_000_900_000.json'
+valid_dataset: 'validation/annotations/2019-05-22/16229547658178627464_380_000_400_000.json'

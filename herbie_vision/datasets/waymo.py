@@ -1,8 +1,3 @@
-##########################################################
-# Path Vars for this script need to be refactored.
-##########################################################
-
-
 import os
 import sys
 import json
@@ -20,22 +15,20 @@ from herbie_vision.utils.gcp_utils import download_blob, upload_blob
 from google.cloud import storage
 
 
-CATEGORY_NAMES = ['TYPE_VEHICLE','TYPE_PEDESTRIAN','TYPE_CYCLIST']
-CATEGORY_IDS = [1,2,4]
-
 def collate_fn(batch):
     return tuple(zip(*batch))
 
 class WaymoDataset(data.Dataset):
-    def __init__(self, gcp_bucket, gcp_annotations_path, local_path_to_images, 
-                 local_path_to_processed_images, cat_names, cat_ids):
+    def __init__(self, gcp_bucket, gcp_annotations_path, root_dir, dataset_type, cat_names, cat_ids):
         super(WaymoDataset, self).__init__()
         
         # filepaths
         self.gcp_bucket = gcp_bucket
         self.gcp_annotations_path = gcp_annotations_path
-        self.local_path_to_images = local_path_to_images
-        self.local_path_to_processed_images = local_path_to_processed_images
+        self.root_dir = root_dir
+        self.dataset_type = dataset_type 
+        self.local_path_to_images = self.root_dir+self.dataset_type+'/images/'
+        self.local_path_to_processed_images = self.root_dir+self.dataset_type+'/images_processed/'
         
         # high level summary values
         self.num_classes = len(cat_names)
@@ -44,21 +37,23 @@ class WaymoDataset(data.Dataset):
         
         
         # setup data directory
-        if os.path.exists('/content/data')==False:
-            os.mkdir('/content/data')
+        print('Setting up data directories...')
+        if os.path.exists(self.root_dir)==False:
+            os.mkdir(self.root_dir)
+            os.mkdir(self.root_dir+self.dataset_type+'/')
             os.mkdir(self.local_path_to_images)
             os.mkdir(self.local_path_to_processed_images)
-        
+
         
         # read in annotations
+        print('Downloading images and annotations...')
         client = storage.Client()
-        bucket = client.get_bucket(self.gcp_bucket)
-        
+        bucket = client.get_bucket(self.gcp_bucket)        
         download_blob(self.gcp_bucket,
-                           self.gcp_annotations_path,
-                           '/content/data/annotations.json')
+                        self.gcp_annotations_path,
+                        self.root_dir+ self.dataset_type + '/' + 'annotations.json')
         
-        f = open('/content/data/annotations.json','r')
+        f = open(self.root_dir+ self.dataset_type + '/' + 'annotations.json','r')
         self.annotations = json.load(f)
         f.close()
         
@@ -80,13 +75,14 @@ class WaymoDataset(data.Dataset):
             blobs = bucket.list_blobs(prefix=segment, delimiter='/')
             for blob in list(blobs):
                 filename=blob.name.replace(segment,'')
-                blob.download_to_filename('/content/data/images/{}'.format(filename))
+                blob.download_to_filename(self.local_path_to_images+'{}'.format(filename))
 
 
         # Drop images without annotations
         self.annotations['images'] = [x for x in self.annotations['images'] if x['id'] in self.annotations_df['image_id'].unique()]
         
         # Preprocess images to be the same size
+        print('Processing images...')
         self.annotations_df = process_resizing(self.local_path_to_processed_images, self.annotations_df,800)
         
             
@@ -110,16 +106,15 @@ class WaymoDataset(data.Dataset):
             labels.append(item['category_id'])
             areas.append(item['area'])
         
-        boxes = torch.tensor(boxes)
-        areas = torch.tensor(areas)
-        labels = torch.tensor(labels)
+        boxes = torch.tensor(boxes, dtype=torch.int64)
+        areas = torch.tensor(areas, dtype=torch.int64)
+        labels = torch.tensor(labels, dtype=torch.int64)
         
         target = {}
         target["boxes"] = boxes
         target["labels"] = labels
         target["image_id"] = image_id
         target["area"] = areas
-        target["iscrowd"] = torch.zeros((temp_df.shape[0],), dtype=torch.int64)
         
         return image, target
     

@@ -5,8 +5,6 @@ import torch.nn.functional as F
 from herbie_vision.utils.utils import _gather_feature, _tranpose_and_gather_feature, flip_tensor # alter import for now
 
 
-# FastRCNN
-
 
 
 
