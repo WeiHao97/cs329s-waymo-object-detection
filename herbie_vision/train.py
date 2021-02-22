@@ -19,7 +19,7 @@ def evaluate(model, dataloader):
 
 
 def train(model, train_dataloader, valid_dataloader, train_config):
-    for epoch in train_config['num_epochs']:
+    for epoch in range(train_config['num_epochs']):
         model.train()
         losses = []
         classifier_losses = []
