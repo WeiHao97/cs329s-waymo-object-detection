@@ -36,6 +36,16 @@ class WaymoDataset(data.Dataset):
         self.category_names = cat_names
         self.category_ids = cat_ids
         
+        # read in annotations
+        client = storage.Client()
+        bucket = client.get_bucket(self.gcp_bucket)        
+        download_blob(self.gcp_bucket,
+                        self.gcp_annotations_path,
+                        self.root_dir+ self.dataset_type + '/' + 'annotations.json')
+        
+        f = open(self.root_dir+ self.dataset_type + '/' + 'annotations.json','r')
+        self.annotations = json.load(f)
+        f.close()
         
         # setup data directory
         print('Setting up data directories...')
@@ -46,18 +56,8 @@ class WaymoDataset(data.Dataset):
             os.mkdir(self.local_path_to_images)
             os.mkdir(self.local_path_to_processed_images)
         
-            # read in annotations
-            print('Downloading images and annotations...')
-            client = storage.Client()
-            bucket = client.get_bucket(self.gcp_bucket)        
-            download_blob(self.gcp_bucket,
-                            self.gcp_annotations_path,
-                            self.root_dir+ self.dataset_type + '/' + 'annotations.json')
             
-            f = open(self.root_dir+ self.dataset_type + '/' + 'annotations.json','r')
-            self.annotations = json.load(f)
-            f.close()
-            
+            print('Downloading and processing images...')
             # convert annotations to dataframe
             self.annotations_df = annotations_to_df(self.annotations, self.local_path_to_images)
 
