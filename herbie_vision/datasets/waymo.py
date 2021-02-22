@@ -37,28 +37,30 @@ class WaymoDataset(data.Dataset):
         self.category_names = cat_names
         self.category_ids = cat_ids
         self.resize = resize
-
-        # read in annotations
-        client = storage.Client()
-        bucket = client.get_bucket(self.gcp_bucket)        
-        download_blob(self.gcp_bucket,
-                        self.gcp_annotations_path,
-                        self.root_dir+ self.dataset_type + '/' + 'annotations.json')
-        
-        f = open(self.root_dir+ self.dataset_type + '/' + 'annotations.json','r')
-        self.annotations = json.load(f)
-        f.close()
         
         # setup data directory
         print('Setting up data directories...')
         if os.path.exists(self.root_dir)==False:
             os.mkdir(self.root_dir)
+        if os.path.exists(self.local_path_to_weights)==False:
+            os.mkdir(self.local_path_to_weights)
         if os.path.exists(self.root_dir+self.dataset_type+'/')==False:
             os.mkdir(self.root_dir+self.dataset_type+'/')
             os.mkdir(self.local_path_to_images)
             os.mkdir(self.local_path_to_processed_images)
-        if os.path.exists(self.local_path_to_weights)==False:
-            os.mkdir(self.local_path_to_weights)
+
+            # read in annotations
+            client = storage.Client()
+            bucket = client.get_bucket(self.gcp_bucket)        
+            download_blob(self.gcp_bucket,
+                            self.gcp_annotations_path,
+                            self.root_dir+ self.dataset_type + '/' + 'annotations.json')
+            
+            f = open(self.root_dir+ self.dataset_type + '/' + 'annotations.json','r')
+            self.annotations = json.load(f)
+            f.close()
+            
+
         
             
             print('Downloading and processing images...')
@@ -89,6 +91,16 @@ class WaymoDataset(data.Dataset):
             self.annotations_df = process_resizing(self.local_path_to_processed_images, self.annotations_df,resize)
             self.annotations_df.to_csv(self.root_dir+ self.dataset_type + '/processed_annotations.csv' )
         else:
+            # read in annotations
+            client = storage.Client()
+            bucket = client.get_bucket(self.gcp_bucket)        
+            download_blob(self.gcp_bucket,
+                            self.gcp_annotations_path,
+                            self.root_dir+ self.dataset_type + '/' + 'annotations.json')
+            
+            f = open(self.root_dir+ self.dataset_type + '/' + 'annotations.json','r')
+            self.annotations = json.load(f)
+            f.close()
             self.annotations_df = pd.read_csv(self.root_dir+ self.dataset_type + '/processed_annotations.csv')
 
         # Drop bounding boxes which get reduced too much by resizing
