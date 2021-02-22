@@ -62,7 +62,7 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
         box_reg_loss = np.mean(box_reg_losses)
         objectness_loss = np.mean(objectness_losses)
         rpn_loss = np.mean(rpn_losses)
-        track_metrics(loss, classifier_loss, box_reg_loss, objectness_loss, rpn_loss)
+        track_metrics(loss, classifier_loss, box_reg_loss, objectness_loss, rpn_loss, epoch)
 
 
         # Evaluation on validation data
