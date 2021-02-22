@@ -64,13 +64,13 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
         rpn_loss = np.mean(rpn_losses)
         track_metrics(loss, classifier_loss, box_reg_loss, objectness_loss, rpn_loss, epoch)
 
+        print('Saving model weights...')
+        torch.save(model.state_dict(), train_config['root']+"model_weights/weigths_{}.pth".format(epoch))
+        wandb.save(train_config['root']+"model_weights/weigths_{}.pth".format(epoch))
 
         # Evaluation on validation data
+        print('Evaluating model on validation set...')
         evaluate(model, valid_dataloader)
-
-        print('Saving model weights...')
-        torch.save(model.state_dict(), "./weigths_{}.pth".format(epoch))
-        wandb.save("./weights_{}.pth".format(epoch))
 
 
 
@@ -99,15 +99,15 @@ if __name__=="__main__":
     # Initialize datasets + folders
     train_dataset = WaymoDataset('waymo-processed',train_config['train_dataset'],train_config['root'], 'train',
                                 train_config['category_names'], train_config['category_ids'])
-    train_dataloader = data.DataLoader(train_dataset, batch_size=2, collate_fn=collate_fn)
+    train_dataloader = data.DataLoader(train_dataset, batch_size=train_config['batch_size'], collate_fn=collate_fn)
 
     valid_dataset = WaymoDataset('waymo-processed', train_config['valid_dataset'],train_config['root'],
                                 'valid', train_config['category_names'], train_config['category_ids'])
-    valid_dataloader = data.DataLoader(valid_dataset, batch_size=2, collate_fn=collate_fn)
+    valid_dataloader = data.DataLoader(valid_dataset, batch_size=config['batch_size'], collate_fn=collate_fn)
 
     # test_dataset = WaymoDataset('waymo-processed', train_config['test_dataset'], train_config['root'], 
     #                             'test', train_config['category_names'], train_config['category_ids'])
-    # test_dataloader = data.DataLoader(test_dataset, batch_size=2, collate_fn=collate_fn)
+    # test_dataloader = data.DataLoader(test_dataset, batch_size=config['batch_size'], collate_fn=collate_fn)
 
 
     # Training parameters

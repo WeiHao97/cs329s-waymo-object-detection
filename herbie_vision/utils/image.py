@@ -4,6 +4,8 @@ import cv2
 import random
 from PIL import Image
 import pandas as pd
+import glob
+
 
 
 def annotations_to_df(annotations, path):
@@ -71,3 +73,20 @@ def process_resizing(resized_path, annotations_df, sz):
     
     
     return annotations_df    
+
+
+def write_video_file(image_path, write_path):
+    # Read images in folder for given segment camera
+    image_files =[]
+    for filename in glob.glob(images_path):
+        image_files.append(filename)
+
+    image_files.sort(key = lambda x: int(x.split('_')[-2]))
+    
+    # Output mp4 video file
+    frameSize = (800, 800)
+    out = cv2.VideoWriter('/Users/peterfagan/Desktop/test.mp4',cv2.VideoWriter_fourcc(*'MP4V'), 20, frameSize)
+    for filename in image_files:
+        img = cv2.imread(filename)
+        out.write(img)
+    out.release()

@@ -30,6 +30,7 @@ class WaymoDataset(data.Dataset):
         self.dataset_type = dataset_type 
         self.local_path_to_images = self.root_dir+self.dataset_type+'/images/'
         self.local_path_to_processed_images = self.root_dir+self.dataset_type+'/images_processed/'
+        self.local_path_to_weights = self.root_dir+'model_weights/'
         
         # high level summary values
         self.num_classes = len(cat_names)
@@ -55,6 +56,8 @@ class WaymoDataset(data.Dataset):
             os.mkdir(self.root_dir+self.dataset_type+'/')
             os.mkdir(self.local_path_to_images)
             os.mkdir(self.local_path_to_processed_images)
+        if os.path.exists(self.local_path_to_weights)==False:
+            os.mkdir(self.local_path_to_weights)
         
             
             print('Downloading and processing images...')
