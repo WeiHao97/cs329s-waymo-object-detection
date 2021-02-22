@@ -36,7 +36,7 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
         for imgs, annotations in tqdm(train_dataloader):
             # Push data to device
             imgs = list(img.to(device) for img in imgs)
-            annotations = [{k: v.to(device) for k, v in t.items() if k!='image_id'} for t in annotations]
+            annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
             
             # Perform forward pass
             loss_dict = model(imgs, annotations)
