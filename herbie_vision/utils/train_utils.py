@@ -14,6 +14,7 @@ def get_fast_rcnn(num_classes):
 
     return model
 
+
 def track_metrics(loss, classifier_loss, box_reg_loss, objectness_loss, rpn_loss, epoch):
             print('\n')
             print('################################################')

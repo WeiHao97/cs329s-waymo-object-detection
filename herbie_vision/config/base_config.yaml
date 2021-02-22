@@ -1,5 +1,5 @@
 # Credentials
-gcp_credentials: <path_to_credentials>
+gcp_credentials: '/Users/peterfagan/Desktop/gcp/waymo-2d-object-detection-514eeefdb0a3.json'
 
 
 # Weights and biases

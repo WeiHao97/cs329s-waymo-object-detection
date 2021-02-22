@@ -5,9 +5,10 @@ import random
 from PIL import Image
 import pandas as pd
 
-def annotations_to_df(annotations, train_path):
+
+def annotations_to_df(annotations, path):
     df = pd.DataFrame(annotations['annotations'])
-    df['filename'] = df['image_id'].apply(lambda x :train_path+'{}.jpeg'.format(x))
+    df['filename'] = df['image_id'].apply(lambda x :path+'{}.jpeg'.format(x))
     df['x_min'] = df['bbox'].apply(lambda x: x[0])
     df['y_min'] = df['bbox'].apply(lambda x: x[1])
     df['width'] = df['bbox'].apply(lambda x: x[2])
@@ -18,6 +19,8 @@ def annotations_to_df(annotations, train_path):
 
     return df
 
+def df_to_annotations():
+    print('Not implemented yet')
 
 def create_mask(bb, x):
     """Creates a mask for the bounding box of same shape as image"""

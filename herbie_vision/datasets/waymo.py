@@ -40,50 +40,54 @@ class WaymoDataset(data.Dataset):
         print('Setting up data directories...')
         if os.path.exists(self.root_dir)==False:
             os.mkdir(self.root_dir)
+        if os.path.exists(self.root_dir+self.dataset_type+'/')==False:
             os.mkdir(self.root_dir+self.dataset_type+'/')
             os.mkdir(self.local_path_to_images)
             os.mkdir(self.local_path_to_processed_images)
+        
+            # read in annotations
+            print('Downloading images and annotations...')
+            client = storage.Client()
+            bucket = client.get_bucket(self.gcp_bucket)        
+            download_blob(self.gcp_bucket,
+                            self.gcp_annotations_path,
+                            self.root_dir+ self.dataset_type + '/' + 'annotations.json')
+            
+            f = open(self.root_dir+ self.dataset_type + '/' + 'annotations.json','r')
+            self.annotations = json.load(f)
+            f.close()
+            
+            # convert annotations to dataframe
+            self.annotations_df = annotations_to_df(self.annotations, self.local_path_to_images)
 
-        
-        # read in annotations
-        print('Downloading images and annotations...')
-        client = storage.Client()
-        bucket = client.get_bucket(self.gcp_bucket)        
-        download_blob(self.gcp_bucket,
-                        self.gcp_annotations_path,
-                        self.root_dir+ self.dataset_type + '/' + 'annotations.json')
-        
-        f = open(self.root_dir+ self.dataset_type + '/' + 'annotations.json','r')
-        self.annotations = json.load(f)
-        f.close()
-        
-        # convert annotations to dataframe
-        self.annotations_df = annotations_to_df(self.annotations, self.local_path_to_images)
+            
+            # determine segment paths
+            self.segment_paths = []
+            for image in self.annotations['images']:
+                uri = image['gcp_url']
+                segment = '/'.join(uri.split('/')[3:7])+'/'
+                if segment not in self.segment_paths:
+                    self.segment_paths.append(segment)
+            
+            
+            # Download images for segments to local folder
+            for segment in self.segment_paths:
+                blobs = bucket.list_blobs(prefix=segment, delimiter='/')
+                for blob in list(blobs):
+                    filename=blob.name.replace(segment,'')
+                    blob.download_to_filename(self.local_path_to_images+'{}'.format(filename))
 
-        
-        # determine segment paths
-        self.segment_paths = []
-        for image in self.annotations['images']:
-            uri = image['gcp_url']
-            segment = '/'.join(uri.split('/')[3:7])+'/'
-            if segment not in self.segment_paths:
-                self.segment_paths.append(segment)
-        
-        
-        # Download images for segments to local folder
-        for segment in self.segment_paths:
-            blobs = bucket.list_blobs(prefix=segment, delimiter='/')
-            for blob in list(blobs):
-                filename=blob.name.replace(segment,'')
-                blob.download_to_filename(self.local_path_to_images+'{}'.format(filename))
-
+            # Preprocess images to be the same size
+            print('Processing images...')
+            self.annotations_df = process_resizing(self.local_path_to_processed_images, self.annotations_df,800)
+            self.annotations_df.to_csv(self.root_dir+ self.dataset_type + '/processed_annotations.csv' )
+        else:
+            self.annotations_df = pd.read_csv(self.root_dir+ self.dataset_type + '/processed_annotations.csv')
 
         # Drop images without annotations
         self.annotations['images'] = [x for x in self.annotations['images'] if x['id'] in self.annotations_df['image_id'].unique()]
         
-        # Preprocess images to be the same size
-        print('Processing images...')
-        self.annotations_df = process_resizing(self.local_path_to_processed_images, self.annotations_df,800)
+        
         
             
             
