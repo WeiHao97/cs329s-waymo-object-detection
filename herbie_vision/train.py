@@ -19,6 +19,7 @@ def evaluate(model, dataloader):
 
 
 def train(model, train_dataloader, valid_dataloader, train_config):
+    device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
     for epoch in range(train_config['num_epochs']):
         model.train()
         losses = []
