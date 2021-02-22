@@ -18,8 +18,8 @@ def evaluate(model, dataloader):
     print('Not Implemented Yet')
 
 
-def train(model, train_dataloader, valid_dataloader):
-    for epoch in NUM_EPOCHS:
+def train(model, train_dataloader, valid_dataloader, train_config):
+    for epoch in train_config['num_epochs']:
         model.train()
         losses = []
         classifier_losses = []
@@ -122,7 +122,7 @@ if __name__=="__main__":
                                                gamma=0.5)
 
     # Train model
-    train(model, train_dataloader, valid_dataloader)
+    train(model, train_dataloader, valid_dataloader, train_config)
 
 
 
