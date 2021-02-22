@@ -20,7 +20,7 @@ def evaluate(model, dataloader):
     print('Not Implemented Yet')
 
 
-def train(model, train_dataloader, valid_dataloader, train_config):
+def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config):
     print('Starting to train model...')
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
     for epoch in range(train_config['num_epochs']):
@@ -127,7 +127,7 @@ if __name__=="__main__":
                                                gamma=0.5)
 
     # Train model
-    train(model, train_dataloader, valid_dataloader, train_config)
+    train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config)
 
 
 
