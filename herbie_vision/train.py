@@ -2,6 +2,8 @@ import sys
 import os
 import yaml
 import argparse
+from tqdm import tqdm
+
 
 import torch
 import torch.utils.data as data
@@ -19,15 +21,17 @@ def evaluate(model, dataloader):
 
 
 def train(model, train_dataloader, valid_dataloader, train_config):
+    print('Starting to train model...')
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
     for epoch in range(train_config['num_epochs']):
+        print('Starting Epoch_{}'.format(epoch))
         model.train()
-        losses = []
+        total_losses = []
         classifier_losses = []
         box_reg_losses = []
         objectness_losses = []
         rpn_losses = []
-        for imgs, annotations in train_dataloader:
+        for imgs, annotations in tqdm(train_dataloader):
             # Push data to device
             imgs = list(img.to(device) for img in imgs)
             annotations = [{k: v.to(device) for k, v in t.items() if k!='image_id'} for t in annotations]
@@ -42,7 +46,7 @@ def train(model, train_dataloader, valid_dataloader, train_config):
             optimizer.step()
 
             # Track loss
-            losses.append(sum(loss_dict.values()))
+            total_losses.append(sum(loss_dict.values()))
             classifier_losses.append(loss_dict['loss_classifier'])
             box_reg_losses.append(loss_dict['loss_box_reg'])
             objectness_losses.append(loss_dict['loss_objectness'])
@@ -51,7 +55,7 @@ def train(model, train_dataloader, valid_dataloader, train_config):
         lr_scheduler.step()
 
         # Average mertrics over epoch and track
-        loss = np.mean(losses)
+        loss = np.mean(total_losses)
         classifier_loss = np.mean(classifier_losses)
         box_reg_loss = np.mean(box_reg_losses)
         objectness_loss = np.mean(objectness_losses)
@@ -108,8 +112,8 @@ if __name__=="__main__":
     NUM_EPOCHS = train_config['num_epochs']
     NUM_CLASSES = train_config['num_classes']
     LR = train_config['learning_rate']
-    MOMENTUM = config['momentum']
-    WEIGHT_DECAY = config['weight_decay']
+    MOMENTUM = train_config['momentum']
+    WEIGHT_DECAY = train_config['weight_decay']
 
 
     # Initialize model and optimizer
