@@ -8,7 +8,7 @@ import torch.utils.data as data
 import torchvision
 
 from herbie_vision.datasets.waymo import WaymoDataset, collate_fn
-from herbie_vision.utils.train_utils import get_fast_rcnn, track_metrics
+from herbie_vision.utils.train_utils import get_fast_rcnn, track_metrics, collate_fn
 
 import wandb
 

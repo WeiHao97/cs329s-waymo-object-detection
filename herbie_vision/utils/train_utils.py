@@ -7,6 +7,9 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 import wandb
 
 
+def collate_fn(batch):
+    return tuple(zip(*batch))
+
 def get_fast_rcnn(num_classes):
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=False)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
