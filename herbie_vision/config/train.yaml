@@ -6,7 +6,7 @@ category_names: ['TYPE_VEHICLE','TYPE_PEDESTRIAN','TYPE_CYCLIST']
 category_ids: [1,2,3]
 
 # Basic hyperparameters
-num_epochs: 25
+num_epochs: 50
 num_classes: 4
 learning_rate: 0.00005
 momentum: 0.9
