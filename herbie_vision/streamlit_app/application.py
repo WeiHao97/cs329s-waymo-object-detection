@@ -33,7 +33,11 @@ import streamlit as st
 
 
 def app():
-    st.title(":car: Welcome to Herbie Vision :car:")
+    # URLs used for video footage
+    herbie_url = 'https://www.youtube.com/watch?v=LKyhP7dWGhE'
+    original_footage='https://www.youtube.com/watch?v=VjDbvm6Nd7Y'
+    updated_footage='https://www.youtube.com/watch?v=wyrAa57rOWs'
+    st.title(":car: Welcome to Herbie Vision (MVP Edition) :car:")
     img = Image.open('./streamlit_app/assets/herbie.jpg')
     st.image(img, width=600)
     st.markdown('''
@@ -53,17 +57,16 @@ def app():
 
         ''')
     if st.checkbox('Learn More About Herbie'):
-        herbie_url = 'https://www.youtube.com/watch?v=LKyhP7dWGhE'
         st.video(herbie_url)
-
+   
     st.markdown('''
         # Footage without Herbie Vision
         ''')
-    # st.video()
+    st.video(original_footage)
     st.markdown('''
         # Footage with Herbie Vision
         ''')
-    # st.video()
+    st.video(updated_footage)
     st.markdown('''
         # Your Turn
 
