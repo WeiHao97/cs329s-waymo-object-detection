@@ -100,7 +100,8 @@ if __name__=="__main__":
 
     # Initialize datasets + folders
     train_dataset = WaymoDataset('waymo-processed',train_config['train_dataset'],train_config['root'], 'train',
-                                train_config['category_names'], train_config['category_ids'], train_config['resize'])
+                                train_config['category_names'], train_config['category_ids'], train_config['resize'],
+                                train_config['area_limit'])
     train_dataloader = data.DataLoader(train_dataset, batch_size=train_config['batch_size'], collate_fn=collate_fn)
 
     # Omit these while testing scripts

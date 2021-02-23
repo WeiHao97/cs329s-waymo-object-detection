@@ -20,7 +20,7 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 class WaymoDataset(data.Dataset):
-    def __init__(self, gcp_bucket, gcp_annotations_path, root_dir, dataset_type, cat_names, cat_ids, resize):
+    def __init__(self, gcp_bucket, gcp_annotations_path, root_dir, dataset_type, cat_names, cat_ids, resize, area_limit):
         super(WaymoDataset, self).__init__()
         
         # filepaths
@@ -37,6 +37,7 @@ class WaymoDataset(data.Dataset):
         self.category_names = cat_names
         self.category_ids = cat_ids
         self.resize = resize
+        self.area_limit = area_limit
         
         # setup data directory
         print('Setting up data directories...')
@@ -103,12 +104,13 @@ class WaymoDataset(data.Dataset):
             f.close()
             self.annotations_df = pd.read_csv(self.root_dir+ self.dataset_type + '/processed_annotations.csv')
 
-        # Drop bounding boxes which get reduced too much by resizing
+        # Drop bounding boxes which are too small
         self.annotations_df['r_area'] = (self.annotations_df['xr_max'] - self.annotations_df['xr_min'])*(self.annotations_df['yr_max'] - self.annotations_df['yr_min'])
-        self.annotations_df = self.annotations_df[self.annotations_df['r_area']>10]
+        self.annotations_df = self.annotations_df[self.annotations_df['r_area']>self.area_limit]
         
 
         # Drop images without annotations
+        self.annotations['images'] = [x for x in self.annotations['images'] if x['id'] in self.annotations_df['image_id'].unique()]
         self.annotations['images'] = [x for x in self.annotations['images'] if x['id'] in self.annotations_df['image_id'].unique()]
         
         
