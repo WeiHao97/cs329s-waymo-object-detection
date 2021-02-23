@@ -6,12 +6,12 @@ category_names: ['TYPE_VEHICLE','TYPE_PEDESTRIAN','TYPE_CYCLIST']
 category_ids: [1,2,3]
 
 # Basic hyperparameters
-num_epochs: 50
+num_epochs: 1
 num_classes: 4
-learning_rate: 0.00005
+learning_rate: 0.01
 momentum: 0.9
 weight_decay: 0.0005
-batch_size: 16
+batch_size: 8
 resize: [1152, 768]
 area_limit: 10000
 

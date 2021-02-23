@@ -54,7 +54,7 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
             objectness_losses.append(loss_dict['loss_objectness'].detach().to('cpu').numpy())
             rpn_losses.append(loss_dict['loss_rpn_box_reg'].detach().to('cpu').numpy())
 
-        lr_scheduler.step()
+        # lr_scheduler.step()
 
         # Average mertrics over epoch and track
         loss = np.mean(total_losses)
@@ -65,12 +65,12 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
         track_metrics(loss, classifier_loss, box_reg_loss, objectness_loss, rpn_loss, epoch)
 
         print('Saving model weights...')
-        torch.save(model.state_dict(), train_config['root']+"model_weights/weigths_{}.pth".format(epoch))
-        wandb.save(train_config['root']+"model_weights/weigths_{}.pth".format(epoch))
+        torch.save(model.state_dict(), train_config['root']+"model_weights/weights_{}.pth".format(epoch))
+        wandb.save(train_config['root']+"model_weights/weights_{}.pth".format(epoch))
 
         # Evaluation on validation data
         print('Evaluating model on validation set...')
-        evaluate(model, valid_dataloader)
+        # evaluate(model, valid_dataloader)
 
 
 
