@@ -49,7 +49,7 @@ def resize_image_bb(read_path,write_path,bb,sz):
     """Resize an image and its bounding box and write image to new path"""
     im = np.array(Image.open(read_path))
     im_resized = cv2.resize(im, (sz[0], sz[1]))
-    Y_resized = cv2.resize(create_mask(bb, im), (sz, sz))
+    Y_resized = cv2.resize(create_mask(bb, im), (sz[0], sz[1]))
     new_path = write_path + read_path.split('/')[-1]
     cv2.imwrite(new_path, cv2.cvtColor(im_resized, cv2.COLOR_RGB2BGR))
     return new_path, mask_to_bb(Y_resized)
