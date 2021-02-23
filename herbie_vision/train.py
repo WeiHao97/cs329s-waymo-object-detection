@@ -54,8 +54,8 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
             objectness_losses.append(loss_dict['loss_objectness'].detach().to('cpu').numpy())
             rpn_losses.append(loss_dict['loss_rpn_box_reg'].detach().to('cpu').numpy())
 
-        # lr_scheduler.step()
 
+        lr_scheduler.step()
         # Average mertrics over epoch and track
         loss = np.mean(total_losses)
         classifier_loss = np.mean(classifier_losses)
@@ -129,8 +129,8 @@ if __name__=="__main__":
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(params, lr=LR, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
-                                               step_size=1,
-                                               gamma=0.5)
+                                               step_size=5,
+                                               gamma=0.95)
 
     # Train model
     train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config)
