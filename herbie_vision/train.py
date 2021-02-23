@@ -56,6 +56,7 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
 
 
         lr_scheduler.step()
+
         # Average mertrics over epoch and track
         loss = np.mean(total_losses)
         classifier_loss = np.mean(classifier_losses)
@@ -124,7 +125,7 @@ if __name__=="__main__":
 
     # Initialize model and optimizer
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = get_fast_rcnn(NUM_CLASSES)
+    model = get_custom_backbone_fast_rcnn(NUM_CLASSES)
     model=model.to(device)
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(params, lr=LR, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)

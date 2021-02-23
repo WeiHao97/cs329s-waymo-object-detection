@@ -145,7 +145,6 @@ class WaymoDataset(data.Dataset):
         target["labels"] = labels
         target["image_id"] = torch.tensor(idx)
         target["area"] = areas
-        # target["iscrowd"] = torch.zeros((temp_df.shape[0],), dtype=torch.int64)
         
         return image, target
     
