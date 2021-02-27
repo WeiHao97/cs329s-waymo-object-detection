@@ -1,0 +1,7 @@
+streamlit
+Pillow
+numpy
+pandas
+opencv-python
+matplotlib
+herbie-vision

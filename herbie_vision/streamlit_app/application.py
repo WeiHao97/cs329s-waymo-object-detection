@@ -6,7 +6,6 @@ import pandas as pd
 import cv2
     
 import PIL.Image as Image
-from gluoncv import model_zoo, data, utils
 from matplotlib import pyplot as plt
 import streamlit as st
 
@@ -38,7 +37,7 @@ def app():
     original_footage='https://www.youtube.com/watch?v=VjDbvm6Nd7Y'
     updated_footage='https://www.youtube.com/watch?v=wyrAa57rOWs'
     st.title(":car: Welcome to Herbie Vision (MVP Edition) :car:")
-    img = Image.open('./streamlit_app/assets/herbie.jpg')
+    img = Image.open('./assets/herbie.jpg')
     st.image(img, width=600)
     st.markdown('''
         # How does Herbie drive? 
