@@ -6,6 +6,9 @@ from PIL import Image
 import pandas as pd
 import glob
 
+from matplotlib import pyplot as plt
+import matplotlib.patches as patches
+
 
 
 def annotations_to_df(annotations, path):
@@ -21,8 +24,10 @@ def annotations_to_df(annotations, path):
 
     return df
 
+
 def df_to_annotations():
     print('Not implemented yet')
+
 
 def create_mask(bb, x):
     """Creates a mask for the bounding box of same shape as image"""
@@ -75,33 +80,53 @@ def process_resizing(resized_path, annotations_df, sz):
     return annotations_df    
 
 
-def plot_annotations(img, bbox, labels, scores):    
+def plot_annotations(img, bbox, labels, scores, confidence_threshold, 
+                    save_fig_path='predicted_img.jpeg', show=False, save_fig=True):
+    """
+    This function plots bounding boxes over image with text labels and saves the image to a particualr location.
+    """
+    
+    # Default colors and mappings
+    colors_map={'1':'#5E81AC','2':'#A3BE8C','3':'#B48EAD'}
+    labels_map={'1':'Vehicle','2':'Person','3':'Cyclist'}    
+    
     # Create figure and axes
-    fig, ax = plt.subplots(figsize = (200,20))
+    fig, ax = plt.subplots(figsize = (200,200))
     
     # Display the image
     ax.imshow(img)
     i=0
-    scores_ind = [idx for idx,x in enumerate(scores) if x>0.4] # Filter for scores greater than certain threshold
+    scores_ind = [idx for idx,x in enumerate(scores) if x>confidence_threshold] # Filter for scores greater than certain threshold
     for idx, entry in enumerate(bbox):
         if idx in scores_ind:
             h = entry[2]-entry[0]
             w = entry[3]-entry[1]
             
             # Create a Rectangle patch
-            rect = patches.Rectangle((entry[0],entry[1]), h, w, linewidth=4, edgecolor=colors_map[str(labels[idx])], facecolor='none')
+            rect = patches.Rectangle((entry[0],entry[1]), h, w, 
+                                    linewidth=60, 
+                                    edgecolor=colors_map[str(labels[idx])],
+                                    facecolor='none')
 
             # Add classification category
             plt.text(entry[0], entry[1], s=labels_map[str(labels[idx])], 
                   color='white', verticalalignment='top',
                   bbox={'color': colors_map[str(labels[idx])], 'pad': 0},
-                  font={'size':25})
+                  font={'size':500})
 
         # Add the patch to the Axes
         ax.add_patch(rect)
         i+=1
 
-    plt.show()
+    if show==True:
+        plt.show()
+
+    plt.savefig(save_fig_path, 
+                    bbox_inches = 'tight',
+                    pad_inches = 0,
+                    dpi=5)
+
+    return save_fig_path
     
     
 def write_annotations(model, images_path, write_path, nms_thresh, score_thresh):

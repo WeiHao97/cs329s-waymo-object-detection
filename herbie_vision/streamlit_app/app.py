@@ -1,12 +1,12 @@
-import application
-import report
-import about
+from sections import introduction
+from sections import report
+from sections import about
 import streamlit as st
 
 from PIL import Image
 
 PAGES = {
-    "Application": application,
+    "Introduction": introduction,
     "Report":report,
     "About": about
 }

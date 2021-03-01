@@ -1,4 +1,5 @@
-.PHONY: run-streamlit run-streamlit-container gcloud-deploy-streamlit
+.PHONY: run-streamlit run-streamlit-container gcloud-deploy-streamlit \
+		gcloud-deploy-prediction-api
 
 run-streamlit:
 	@streamlit run herbie_vision/streamlit_app/app.py --server.port=8080 --server.address=0.0.0.0
