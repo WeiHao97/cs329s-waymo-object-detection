@@ -2,7 +2,7 @@ FROM python:3.7.8-slim
 
 # Expose port which the will be exposed from
 EXPOSE 8080
-ENV REST_API="http:///predict"
+ENV REST_API="http://104.197.130.32/predict"
 
 RUN apt-get update ##[edited]
 RUN apt-get install ffmpeg libsm6 libxext6  -y

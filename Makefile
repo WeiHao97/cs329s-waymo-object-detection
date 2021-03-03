@@ -9,9 +9,9 @@ gcloud-deploy-web-application:
 	@gcloud container clusters create thor --flags-file ./config/model_serving/cluster_config.yaml
 	@gcloud container clusters get-credentials thor --zone us-central1-c --project waymo-2d-object-detection
 	@kubectl create secret docker-registry mycred \
-			 --docker-server=<docker registry> --docker-username=<username> \
-			 --docker-password=<password>  \
-			 --docker-email=<email>
+			 --docker-server=registry.hub.docker.com/peterdavidfagan/cs329s-prediction --docker-username=peterdavidfagan \
+			 --docker-password=thisismynewpassword97  \
+			 --docker-email=peterdavidfagan@gmail.com
 	@kubectl apply -f ./config/model_serving/basic_pod.yaml
 	@echo 'Wating for pods to be created...'
 	@sleep 240
