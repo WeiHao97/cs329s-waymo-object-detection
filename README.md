@@ -29,5 +29,4 @@ There are two main sources of data for this project:
 **Customer Datasets:** Generated using the Nvidia Jetson Nano
 
 <H1>Web Application</H1>
-![Alt text](./assets/webapp.gif)
-
+![app_demo](https://github.com/peterdavidfagan/herbie-vision/blob/main/assets/webapp.gif)
