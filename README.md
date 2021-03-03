@@ -29,5 +29,5 @@ There are two main sources of data for this project:
 **Customer Datasets:** Generated using the Nvidia Jetson Nano
 
 <H1>Web Application</H1>
-![Alt Text](https://media.giphy.com/media/T9e0K0YiFDWGFNrZNI/giphy.gif)
+![Alt text](./assets/webapp.gif)
 
