@@ -9,24 +9,30 @@ In this project, we explore the challenges in maintaining and deploying an objec
 <\p>
   
 <p>  
-This project is currently under construction 🏗, below you can find the current status:
+This project is currently under construction 🏗, below you can find the current status of items we are working on:
 
-- [x] Process and store Waymo data in GCP
+MVP
+- [x] Process and store Waymo data in Coco format on GCP
 - [x] Train preliminary models on Waymo data
 - [x] Implement Flask application to serve model results
 - [x] Create Streamlit application to display results to users
-- [x] Kubernetes config + Makefile
-- [ ] Include github actions for redeployments
-- [ ] Include Dataturks annotation app 
-- [ ] Build + integrate model training setup with Weights and Biases
-- [ ] Setup monitoring and logging
-- [ ] Create script for model compression to deploy on Nvidia Jetson Nano
+- [x] Deploy web app and model serving application using kubernetes
+
+
+Demo
+- [ ] Add exploratory features to the web application
+- [ ] Enhance the training and evaluation processes (submission of training jobs)
+- [ ] Create script to compress and deploy model on Nvidia Jetson Nano
+- [ ] Write report
 <\p>
 
 <H1>Data</H1>
+<p>
 There are two main sources of data for this project:
-**Waymo Dataset:** https://waymo.com/open/
-**Customer Datasets:** Generated using the Nvidia Jetson Nano
+
+- **Waymo Dataset:** https://waymo.com/open/
+- **Custom Datasets:** Generated using the Nvidia Jetson Nano
+<\p>
 
 <H1>Web Application</H1>
 <img src="/assets/webapp.gif?raw=true" width="800px">
