@@ -1,8 +1,0 @@
-opencv-python
-numpy
-requests
-flask
-pillow
-torch
-torchvision
-google-cloud-storage

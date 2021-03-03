@@ -1,3 +1,4 @@
+import setuptools
 from setuptools import setup
 from os import path
 
@@ -13,6 +14,7 @@ setup(
     long_description_content_type='text/markdown',
     author='Ethan Garrity / Peter David Fagan / Tiffany Han Shi',
     author_email='peterdavidfagan@gmail.com',
+    packages=setuptools.find_packages(),
     py_modules=['herbie_vision'],
     license='MIT',
     python_requires='>=3.5',

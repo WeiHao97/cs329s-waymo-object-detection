@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cs329s-prediction
+  labels:
+    name: cs329s-prediction
+spec:
+  containers:
+  - name: cs329s-prediction
+    image: registry.hub.docker.com/peterdavidfagan/cs329s-prediction:latest
+    ports:
+      - containerPort: 5000
+  imagePullSecrets:
+  - name: mycred

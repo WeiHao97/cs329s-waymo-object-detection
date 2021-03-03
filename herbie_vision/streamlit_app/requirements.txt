@@ -4,4 +4,4 @@ numpy
 pandas
 opencv-python
 matplotlib
-herbie-vision
+herbie-vision==0.1.3
