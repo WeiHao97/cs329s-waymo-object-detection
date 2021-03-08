@@ -12,7 +12,7 @@ import torch.utils.data as data
 import torchvision
 
 from herbie_vision.datasets.waymo import WaymoDataset, collate_fn
-from herbie_vision.utils.train_utils import get_fast_rcnn, track_metrics, collate_fn
+from herbie_vision.utils.train_utils import get_fast_rcnn, track_metrics, collate_fn, get_custom_backbone_fast_rcnn
 
 import wandb
 
@@ -84,18 +84,25 @@ if __name__=="__main__":
     parser.add_argument('path_to_train_config', type=str,
                         help='path to configuration file')
     parser.add_argument('num_epochs', type=int,
+                         nargs='?',default=25,
                         help='number of epochs')
     parser.add_argument('learning_rate', type=float,
+                        nargs='?',default=0.01,
                         help='learning rate')
     parser.add_argument('momentum', type=float,
+                        nargs='?',default = 0.9,
                         help='momentum')
     parser.add_argument('weight_decay', type=float,
+                        nargs='?',default = 0.0005,
                         help='weight decay')
     parser.add_argument('batch_size', type=int,
-                        help='batch size')
+                        default=8,
+                        nargs='?',help='batch size')
     parser.add_argument('resize', type=list,
+                        nargs='?',default =[1152, 768],
                         help='resized dimension of images')
     parser.add_argument('area', type=int,
+                        nargs='?',default=50,
                         help='minimum area of bounding box after resizing which is considered for training')
     args = parser.parse_args()
 
@@ -123,7 +130,7 @@ if __name__=="__main__":
 
 
     # Initialize datasets + folders
-    train_dataset = WaymoDataset('waymo-processed',train_config['train_dataset'],train_config['root'], 'train',
+    train_dataset = WaymoDataset(train_config['bucket'],train_config['train_dataset'],train_config['root'], train_config['train_folder'],
                                 train_config['category_names'], train_config['category_ids'], train_config['resize'],
                                 wandb_config.area_limit)
     train_dataloader = data.DataLoader(train_dataset, batch_size=wandb_config.batch_size, collate_fn=collate_fn)
@@ -149,4 +156,4 @@ if __name__=="__main__":
                                                gamma=0.95)
 
     # Train model
-    train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config, wandb_config)
+    train(model, optimizer, lr_scheduler, train_dataloader, None, train_config, wandb_config)

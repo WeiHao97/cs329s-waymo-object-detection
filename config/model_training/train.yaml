@@ -1,5 +1,9 @@
+# Data storage bucket
+bucket: 'waymo-processed'
+
 # Directories
-root: '/home/waymo/data/'
+root: '/Users/peterfagan/Code/herbie-vision/herbie_vision/data/'
+train_folder: 'train'
 
 # Categories
 category_names: ['TYPE_VEHICLE','TYPE_PEDESTRIAN','TYPE_CYCLIST']
