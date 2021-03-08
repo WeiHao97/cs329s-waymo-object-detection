@@ -1,6 +1,5 @@
 FROM ubuntu:latest
 
-# Set timezone
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Basic installations
@@ -21,7 +20,7 @@ RUN apt-get update
 RUN mkdir -p /prediction_api
 # Copy necessary files to container
 COPY requirements.txt /prediction_api
-COPY /Users/peterfagan/Desktop/gcp/waymo-2d-object-detection-514eeefdb0a3.json /prediction_api
+COPY waymo-2d-object-detection-514eeefdb0a3.json /prediction_api
 
 # Install python dependencies
 RUN pip3 install --upgrade pip setuptools wheel

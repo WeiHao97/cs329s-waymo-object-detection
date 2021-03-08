@@ -5,4 +5,8 @@ gcp_waymo_processed_data_bucket: 'waymo-processed'
 # Waymo data processing script config
 root_directory: '/home/waymo/'
 temp_directory: '/home/waymo/temp/'
-waymo_training_path: 'waymo_open_dataset_v_1_2_0_individual_files/training/'
+
+
+# Raw data to process
+raw_data_path: 'waymo_open_dataset_v_1_2_0_individual_files/training/'
+datatype: 'train'

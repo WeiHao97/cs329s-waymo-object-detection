@@ -1,0 +1,13 @@
+name: cool_sweep
+project: herbie-vision
+entity: peterdavidfagan
+program: train.py
+method: grid
+parameters:
+  num_epochs: 25
+  num_classes: 4
+  learning_rate: 0.01
+  momentum: 0.9
+  weight_decay: 0.0005
+  batch_size: 8
+  area_limit: 5000

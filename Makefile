@@ -1,5 +1,6 @@
 .PHONY: run-streamlit run-streamlit-container-locally gcloud-deploy-streamlit \
-		gcloud-deploy-web-application gcloud-tear-down-prediction-web-application
+		gcloud-deploy-web-application gcloud-tear-down-prediction-web-application \
+		gcloud-run-waymo-to-coco
 
 run-streamlit-container-locally:
 	@docker build herbie_vision/streamlit_app/. -t herbie_vision
@@ -24,3 +25,18 @@ gcloud-deploy-web-application:
 gcloud-tear-down-prediction-web-application:
 	@gcloud container clusters delete thor --zone us-central1-c --quiet # automate zone flag in future
 	@gcloud app services delete web-application --quiet
+
+gcloud-run-waymo-to-coco:
+	@gcloud compute instances create-with-container thor-train \
+	 --machine-type e2-standard-8 --boot-disk-size 200 \
+	 --container-image gcr.io/waymo-2d-object-detection/dataprocessing_train
+
+	@gcloud compute instances create-with-container thor-test \
+	--machine-type e2-standard-8 --boot-disk-size 200 \
+	--container-image gcr.io/waymo-2d-object-detection/dataprocessing_test
+
+	@gcloud compute instances create-with-container thor-validation \
+	--machine-type e2-standard-8 --boot-disk-size 200 \
+	--container-image gcr.io/waymo-2d-object-detection/dataprocessing_validation
+
+#kubectl apply -f wandb_kubernetes.yaml

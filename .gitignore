@@ -1,3 +1,7 @@
+gcp_credentials.yaml
+wandb_kubernetes.yaml
+docker_kubernetes.yaml
+credentials.json
 *.bak
 .DS_Store
 data/

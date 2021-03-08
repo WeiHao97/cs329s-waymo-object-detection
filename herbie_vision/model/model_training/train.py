@@ -22,10 +22,10 @@ def evaluate(model, dataloader):
     print('Not Implemented Yet')
 
 
-def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config):
+def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config, wandb_config):
     print('Starting to train model...')
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    for epoch in range(train_config['num_epochs']):
+    for epoch in range(wandb_config.num_epochs):
         print('Starting Epoch_{}'.format(epoch))
         model.train()
         total_losses = []
@@ -83,6 +83,20 @@ if __name__=="__main__":
                         help='path to configuration file')
     parser.add_argument('path_to_train_config', type=str,
                         help='path to configuration file')
+    parser.add_argument('num_epochs', type=int,
+                        help='number of epochs')
+    parser.add_argument('learning_rate', type=float,
+                        help='learning rate')
+    parser.add_argument('momentum', type=float,
+                        help='momentum')
+    parser.add_argument('weight_decay', type=float,
+                        help='weight decay')
+    parser.add_argument('batch_size', type=int,
+                        help='batch size')
+    parser.add_argument('resize', type=list,
+                        help='resized dimension of images')
+    parser.add_argument('area', type=int,
+                        help='minimum area of bounding box after resizing which is considered for training')
     args = parser.parse_args()
 
     # Read configuration files
@@ -92,18 +106,27 @@ if __name__=="__main__":
         train_config = yaml.load(file, Loader=yaml.FullLoader)
 
 
-    # Resolve external dependencies
-    wandb.init(project=base_config['project'], entity=base_config['entity'], name=base_config['run_name'])
-    
-    # Omit while testing on colab
-    # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] =  base_config['gcp_credentials']
+    # Setup weights and biases and gcp connection
+    hyperparameter_defaults = dict(
+    num_epochs= 25,
+    num_classes=4,
+    learning_rate=0.01,
+    momentum=0.9,
+    weight_decay=0.0005,
+    batch_size=8,
+    area_limit=5000
+    )
+
+    wandb.init(config=hyperparameter_defaults)
+    wandb_config = wandb.config
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] =  base_config['gcp_credentials']
 
 
     # Initialize datasets + folders
     train_dataset = WaymoDataset('waymo-processed',train_config['train_dataset'],train_config['root'], 'train',
                                 train_config['category_names'], train_config['category_ids'], train_config['resize'],
-                                train_config['area_limit'])
-    train_dataloader = data.DataLoader(train_dataset, batch_size=train_config['batch_size'], collate_fn=collate_fn)
+                                wandb_config.area_limit)
+    train_dataloader = data.DataLoader(train_dataset, batch_size=wandb_config.batch_size, collate_fn=collate_fn)
 
     # Omit these while testing scripts
     # valid_dataset = WaymoDataset('waymo-processed', train_config['valid_dataset'],train_config['root'],
@@ -115,27 +138,15 @@ if __name__=="__main__":
     # test_dataloader = data.DataLoader(test_dataset, batch_size=config['batch_size'], collate_fn=collate_fn)
 
 
-    # Training parameters
-    NUM_EPOCHS = train_config['num_epochs']
-    NUM_CLASSES = train_config['num_classes']
-    LR = train_config['learning_rate']
-    MOMENTUM = train_config['momentum']
-    WEIGHT_DECAY = train_config['weight_decay']
-
-
     # Initialize model and optimizer
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = get_custom_backbone_fast_rcnn(NUM_CLASSES)
+    model = get_custom_backbone_fast_rcnn(train_config['num_classes'])
     model=model.to(device)
     params = [p for p in model.parameters() if p.requires_grad]
-    optimizer = torch.optim.SGD(params, lr=LR, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
+    optimizer = torch.optim.SGD(params, lr=wandb_config.learning_rate, momentum=wandb_config.momentum, weight_decay=wandb_config.weight_decay)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                step_size=5,
                                                gamma=0.95)
 
     # Train model
-    train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config)
-
-
-
-
+    train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config, wandb_config)
