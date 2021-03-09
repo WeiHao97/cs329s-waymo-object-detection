@@ -63,16 +63,23 @@ def track_metrics(loss, classifier_loss, box_reg_loss, objectness_loss, rpn_loss
 
 
 
-def concatenateJSON(paths, root_dir, dataset_type, new_file_name):
+def concatenateJSON(paths, root_dir, dataset_type, new_file_name, gcp_bucket="waymo-processed"):
     """
     :param paths: list of annotation file paths to concatenate
     :return: gcp path containing JSON concatenatation of input annotation files
 
     *** assuming bucket is waymo-processed at this point ***
 
+    *** sample use of function
+
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = '/Users/tiffanyshi/Desktop/waymo-2d-object-detection-9ea7bd3b9e0b.json'
+    root_dir = '/Users/tiffanyshi/PycharmProjects/329swaymoproject/herbie-vision/'
+    tests = ['train/annotations/2019-05-22/11940460932056521663_1760_000_1780_000.json',
+             'test/annotations/2019-06-01/2942662230423855469_880_000_900_000.json']
+    concatenateJSON(tests, root_dir, "test", "tester.json")
+
     """
 
-    gcp_bucket = "waymo-processed"
     gcp_curated_annotations_path = "train/curated_annotations/" + new_file_name
 
     return_file = "tmpFile.json"
