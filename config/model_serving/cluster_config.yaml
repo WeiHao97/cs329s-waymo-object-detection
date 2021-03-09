@@ -1,0 +1,15 @@
+# Specify the zone for this resource
+--zone:  us-central1-c
+
+# autoscaling
+--num-nodes: 3
+--enable-autoscaling:
+--min-nodes: 1
+--max-nodes: 10
+
+# # auto provisioning:
+--enable-autoprovisioning: 
+--max-cpu: 8
+--max-memory: 32
+--min-cpu: 3
+--min-memory: 16

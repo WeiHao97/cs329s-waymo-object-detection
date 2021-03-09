@@ -1,2 +1,20 @@
+# Container environment
 runtime: custom
 env: flex
+service: web-application
+
+
+# Specify machine resources
+resources:
+  cpu: 6
+  memory_gb: 32
+  disk_size_gb: 100
+
+# Scaling config
+automatic_scaling:
+  min_num_instances: 1
+  max_num_instances: 5
+  cool_down_period_sec: 180
+  cpu_utilization:
+    target_utilization: 0.8
+  target_concurrent_requests: 100

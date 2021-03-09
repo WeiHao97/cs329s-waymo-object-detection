@@ -1,0 +1,11 @@
+waymo-open-dataset-tf-2-1-0==1.2.0
+numpy
+pandas
+datetime
+pillow
+tqdm
+pyyaml
+argparse
+matplotlib
+herbie-vision
+google-cloud-storage

@@ -1,9 +1,0 @@
-# Credentials
-gcp_credentials: '/Users/peterfagan/Desktop/gcp/waymo-2d-object-detection-514eeefdb0a3.json'
-
-
-# Weights and biases
-project: 'waymo-2d-object-detection'
-entity: 'peterdavidfagan'
-run_name: 'fast_rcnn_default'
-
