@@ -12,100 +12,59 @@ import torch.utils.data as data
 import torchvision
 
 from herbie_vision.datasets.waymo import WaymoDataset, collate_fn
-from herbie_vision.utils.train_utils import get_fast_rcnn, track_metrics, collate_fn, get_custom_backbone_fast_rcnn
+from herbie_vision.utils.train_utils import get_fast_rcnn, track_metrics, collate_fn, get_custom_backbone_fast_rcnn, get_map
+
+import sklearn.metrics
+from sklearn.metrics import average_precision_score
 
 import wandb
 
-from mean_average_precision import MetricBuilder
-
-
-
-
-def get_map(pred, gt, f):
-    T = {}
-    P = {}
-    fx, fy = f
-
-    for bbox in gt:
-        bbox['bbox_matched'] = False
-
-    pred_probs = np.array([s['prob'] for s in pred])
-    box_idx_sorted_by_prob = np.argsort(pred_probs)[::-1]
-
-    for box_idx in box_idx_sorted_by_prob:
-        pred_box = pred[box_idx]
-        pred_class = pred_box['class']
-        pred_x1 = pred_box['x1']
-        pred_x2 = pred_box['x2']
-        pred_y1 = pred_box['y1']
-        pred_y2 = pred_box['y2']
-        pred_prob = pred_box['prob']
-        if pred_class not in P:
-            P[pred_class] = []
-            T[pred_class] = []
-        P[pred_class].append(pred_prob)
-        found_match = False
-
-        for gt_box in gt:
-            gt_class = gt_box['class']
-            gt_x1 = gt_box['x1']/fx
-            gt_x2 = gt_box['x2']/fx
-            gt_y1 = gt_box['y1']/fy
-            gt_y2 = gt_box['y2']/fy
-            gt_seen = gt_box['bbox_matched']
-            if gt_class != pred_class:
-                continue
-            if gt_seen:
-                continue
-            iou = bbox_intersection_over_union([pred_x1, pred_y1, pred_x2, pred_y2], [gt_x1, gt_y1, gt_x2, gt_y2])
-            #iou = data_generators.iou((pred_x1, pred_y1, pred_x2, pred_y2), (gt_x1, gt_y1, gt_x2, gt_y2))
-            if iou >= 0.5:
-                found_match = True
-                gt_box['bbox_matched'] = True
-                break
-            else:
-                continue
-
-        T[pred_class].append(int(found_match))
-
-    for gt_box in gt:
-        if not gt_box['bbox_matched'] and not gt_box['difficult']:
-            if gt_box['class'] not in P:
-                P[gt_box['class']] = []
-                T[gt_box['class']] = []
-
-            T[gt_box['class']].append(1)
-            P[gt_box['class']].append(0)
-
-    return T, P
-
-def bb_intersection_over_union(boxA, boxB):
-    # determine the (x, y)-coordinates of the intersection rectangle
-    xA = max(boxA[0], boxB[0])
-    yA = max(boxA[1], boxB[1])
-    xB = min(boxA[2], boxB[2])
-    yB = min(boxA[3], boxB[3])
-
-    # compute the area of intersection rectangle
-    interArea = abs(max((xB - xA, 0)) * max((yB - yA), 0))
-    if interArea == 0:
-        return 0
-    # compute the area of both the prediction and ground-truth
-    # rectangles
-    boxAArea = abs((boxA[2] - boxA[0]) * (boxA[3] - boxA[1]))
-    boxBArea = abs((boxB[2] - boxB[0]) * (boxB[3] - boxB[1]))
-
-    # compute the intersection over union by taking the intersection
-    # area and dividing it by the sum of prediction + ground-truth
-    # areas - the interesection area
-    iou = interArea / float(boxAArea + boxBArea - interArea)
-
-    # return the intersection over union value
-    return iou
 
 def evaluate(model, dataloader):
+    device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.eval()
-    print('Not Implemented Yet')
+    T = {}
+    P = {}
+    for imgs, annotations in tqdm(dataloader):
+        imgs = [img.to(device) for img in imgs]
+        annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
+        
+        for idx, img in enumerate(imgs):
+            model_pred = model(img)
+            img_annotations = annotations[idx]
+            predictions = []
+            for pred_idx, pred in enumerate(model_pred):
+                pred_box_dict = {}
+                pred_box_dict['class'] = pred['labels'][pred_idx]
+                pred_box_dict['x1'] = pred['boxes'][pred_idx][0]
+                pred_box_dict['x2'] = pred['boxes'][pred_idx][1]
+                pred_box_dict['y1'] = pred['boxes'][pred_idx][2]
+                pred_box_dict['y2'] = pred['boxes'][pred_idx][3]
+                pred_box_dict['prob'] = pred['scores'][pred_idx]
+                predictions.append(pred_box_dict)
+            img_data = []
+            for ann_idx, annotation in enumerate(img_annotations):
+                gt_box_dict = {}
+                gt_box_dict['class'] = annotation['labels'][ann_idx]
+                gt_box_dict['x1'] = annotation['boxes'][ann_idx][0]
+                gt_box_dict['x2'] = annotation['boxes'][ann_idx][1]
+                gt_box_dict['y1'] = annotation['boxes'][ann_idx][2]
+                gt_box_dict['y2'] = annotation['boxes'][ann_idx][3]
+                gt_box_dict['bbox_matched'] = False
+                img_data.append(gt_box_dict)
+            t, p = get_map(predictions, img_data)
+            for key in t.keys():
+                if key not in T:
+                    T[key] = []
+                    P[key] = []
+                T[key].extend(t[key])
+                P[key].extend(p[key])
+    all_aps = []
+    for key in T.keys():
+        ap = average_precision_score(T[key], P[key])
+        print('{} AP: {}'.format(key, ap))
+        all_aps.append(ap)
+    print('mAP = {}'.format(np.mean(np.array(all_aps))))
 
 
 def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config, wandb_config):
