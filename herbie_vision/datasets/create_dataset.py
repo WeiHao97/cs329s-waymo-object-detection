@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+from herbie_vision.utils.gcp_utils import download_blob
 from herbie_vision.utils.train_utils import concatenateJSON
 
 def segmentByDate(df, startdate, enddate):
@@ -89,9 +90,13 @@ def dataframeToPaths(df):
 #some sample code:
 
 #setup, will move to reading cloud csv blob later
-df = pd.read_csv('train_metadata_metadata.csv')
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = '/Users/tiffanyshi/Desktop/waymo-2d-object-detection-9ea7bd3b9e0b.json'
 root_dir = '/Users/tiffanyshi/PycharmProjects/329swaymoproject/herbie-vision/'
+
+download_blob('waymo-processed',
+                      'train/metadata/metadata.csv',
+                      root_dir + "herbie_vision/datasets" + '/' + 'metadata.csv')
+df = pd.read_csv('metadata.csv')
 
 #move to command line later --> this is the editable lines where we can choose our data segments
 df = segmentByDate(df, '2017-02-10','2019-03-13')
@@ -102,3 +107,5 @@ df = equalDist(df, columns=['time_of_day'])
 df['gcp_url'] = df['gcp_url'].str.replace('gs://waymo-processed/', '')
 tests = dataframeToPaths(df)
 concatenateJSON(tests, root_dir, "test", "tester.json") #the uploading is very slow but i don't think i can control that
+os.remove('metadata.csv')
+
