@@ -116,4 +116,4 @@ def concatenateJSON(paths, root_dir, dataset_type, new_file_name, gcp_bucket="wa
     os.remove(return_file)
     os.remove(root_dir + dataset_type + '/' + 'annotations.json')
 
-    return gcp_annotations_path
+    return gcp_curated_annotations_path
