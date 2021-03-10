@@ -70,11 +70,7 @@ def evaluate(model, dataloader):
 def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config, wandb_config):
     print('Starting to train model...')
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
-<<<<<<< HEAD:herbie_vision/train.py
-    for epoch in range(2): #(train_config['num_epochs']):
-=======
     for epoch in range(wandb_config.num_epochs):
->>>>>>> 5cb383899699d874e68e5334a2fe628609b6381b:herbie_vision/model/model_training/train.py
         print('Starting Epoch_{}'.format(epoch))
         model.train()
         total_losses = []
