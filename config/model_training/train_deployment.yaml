@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parameter-sweep
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: parameter-sweep
+  template:
+    metadata:
+      labels:
+        app: parameter-sweep
+    spec:
+      containers:
+      - name: parameter-sweep
+        image: gcr.io/waymo-2d-object-detection/model-train
+        command: ["wandb", "agent", "your_sweep_id"]
+        env:
+        - name: WANDB_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: wandb-secret
+              key: secret
+        volumeMounts:
+        - mountPath: /home/waymo/data
+          name: datasets
+      volumes:
+      - name: datasets
+        persistentVolumeClaim:
+         claimName: fileserver-claim
+         readOnly: false

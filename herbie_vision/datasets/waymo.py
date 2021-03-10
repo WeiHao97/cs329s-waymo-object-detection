@@ -27,11 +27,12 @@ class WaymoDataset(data.Dataset):
         # filepaths
         self.gcp_bucket = gcp_bucket
         self.gcp_annotations_path = gcp_annotations_path
+        self.dataset_name =  gcp_annoatations_path.split('/')[-1].replace('.json','')
         self.root_dir = root_dir
         self.dataset_type = dataset_type 
-        self.local_path_to_images = self.root_dir+self.dataset_type+'/images/'
-        self.local_path_to_processed_images = self.root_dir+self.dataset_type+'/images_processed/'
-        self.local_path_to_weights = self.root_dir+'model_weights/'
+        self.local_path_to_images = self.root_dir+'/'+self.dataset_name+'/'+self.dataset_type+'/images/'
+        self.local_path_to_processed_images = self.root_dir+'/'+self.dataset_name+'/'+self.dataset_type+'/images_processed/'
+        self.local_path_to_weights = self.root_dir+'/'+self.dataset_name+'/'+'model_weights/'
         
         # high level summary values
         self.num_classes = len(cat_names)
@@ -46,8 +47,8 @@ class WaymoDataset(data.Dataset):
             os.mkdir(self.root_dir)
         if os.path.exists(self.local_path_to_weights)==False:
             os.mkdir(self.local_path_to_weights)
-        if os.path.exists(self.root_dir+self.dataset_type+'/')==False:
-            os.mkdir(self.root_dir+self.dataset_type+'/')
+        if os.path.exists(self.root_dir+'/'+self.dataset_name+'/')==False:
+            os.mkdir(self.root_dir+'/'+self.dataset_name+'/'+self.dataset_type+'/')
             os.mkdir(self.local_path_to_images)
             os.mkdir(self.local_path_to_processed_images)
 
@@ -56,9 +57,9 @@ class WaymoDataset(data.Dataset):
             bucket = client.get_bucket(self.gcp_bucket)        
             download_blob(self.gcp_bucket,
                             self.gcp_annotations_path,
-                            self.root_dir+ self.dataset_type + '/' + 'annotations.json')
+                            self.root_dir +'/'+self.dataset_name+'/' + self.dataset_type + '/' + 'annotations.json')
             
-            f = open(self.root_dir+ self.dataset_type + '/' + 'annotations.json','r')
+            f = open(self.root_dir +'/'+self.dataset_name+'/'+ self.dataset_type + '/' + 'annotations.json','r')
             self.annotations = json.load(f)
             f.close()
             
@@ -91,19 +92,19 @@ class WaymoDataset(data.Dataset):
             # Preprocess images to be the same size
             print('Processing images...')
             self.annotations_df = process_resizing(self.local_path_to_processed_images, self.annotations_df,resize)
-            self.annotations_df.to_csv(self.root_dir+ self.dataset_type + '/processed_annotations.csv' )
+            self.annotations_df.to_csv(self.root_dir+'/'+self.dataset_name+'/'+ self.dataset_type + '/processed_annotations.csv' )
         else:
             # read in annotations
             client = storage.Client()
             bucket = client.get_bucket(self.gcp_bucket)        
             download_blob(self.gcp_bucket,
                             self.gcp_annotations_path,
-                            self.root_dir+ self.dataset_type + '/' + 'annotations.json')
+                            self.root_dir+'/'+self.dataset_name+'/'+ self.dataset_type + '/' + 'annotations.json')
             
-            f = open(self.root_dir+ self.dataset_type + '/' + 'annotations.json','r')
+            f = open(self.root_dir+'/'+self.dataset_name+'/'+ self.dataset_type + '/' + 'annotations.json','r')
             self.annotations = json.load(f)
             f.close()
-            self.annotations_df = pd.read_csv(self.root_dir+ self.dataset_type + '/processed_annotations.csv')
+            self.annotations_df = pd.read_csv(self.root_dir +'/'+self.dataset_name+'/'+ self.dataset_type + '/processed_annotations.csv')
 
         # Drop bounding boxes which are too small
         self.annotations_df['r_area'] = (self.annotations_df['xr_max'] - self.annotations_df['xr_min'])*(self.annotations_df['yr_max'] - self.annotations_df['yr_min'])

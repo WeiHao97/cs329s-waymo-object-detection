@@ -124,7 +124,10 @@ if __name__=="__main__":
     area_limit=5000
     )
 
-    wandb.init(config=hyperparameter_defaults)
+    wandb.init(config=hyperparameter_defaults, 
+                project=train_config['wandb_project'], 
+                entity=train_config['wandb_entity'], 
+                name=train_config['wandb_name'])
     wandb_config = wandb.config
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] =  base_config['gcp_credentials']
 

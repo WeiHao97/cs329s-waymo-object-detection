@@ -50,8 +50,7 @@ RUN apt-get update
 
 # credentials and additional requirements
 RUN mkdir -p /home/waymo
-COPY requirements.txt /home/waymo
-COPY credentials.json /home/waymo
+COPY . /home/waymo
 
 # Install python dependencies
 RUN pip3 install --upgrade pip setuptools wheel
