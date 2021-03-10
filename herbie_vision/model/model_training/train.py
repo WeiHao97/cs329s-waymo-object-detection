@@ -12,20 +12,69 @@ import torch.utils.data as data
 import torchvision
 
 from herbie_vision.datasets.waymo import WaymoDataset, collate_fn
-from herbie_vision.utils.train_utils import get_fast_rcnn, track_metrics, collate_fn, get_custom_backbone_fast_rcnn
+from herbie_vision.utils.train_utils import get_fast_rcnn, track_metrics, collate_fn, get_custom_backbone_fast_rcnn, get_map
+
+import sklearn.metrics
+from sklearn.metrics import average_precision_score
 
 import wandb
 
 
 def evaluate(model, dataloader):
+    device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.eval()
-    print('Not Implemented Yet')
+    T = {}
+    P = {}
+    for imgs, annotations in tqdm(dataloader):
+        imgs = [img.to(device) for img in imgs]
+        annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
+        
+        for idx, img in enumerate(imgs):
+            model_pred = model(img)
+            img_annotations = annotations[idx]
+            predictions = []
+            for pred_idx, pred in enumerate(model_pred):
+                pred_box_dict = {}
+                pred_box_dict['class'] = pred['labels'][pred_idx]
+                pred_box_dict['x1'] = pred['boxes'][pred_idx][0]
+                pred_box_dict['x2'] = pred['boxes'][pred_idx][1]
+                pred_box_dict['y1'] = pred['boxes'][pred_idx][2]
+                pred_box_dict['y2'] = pred['boxes'][pred_idx][3]
+                pred_box_dict['prob'] = pred['scores'][pred_idx]
+                predictions.append(pred_box_dict)
+            img_data = []
+            for ann_idx, annotation in enumerate(img_annotations):
+                gt_box_dict = {}
+                gt_box_dict['class'] = annotation['labels'][ann_idx]
+                gt_box_dict['x1'] = annotation['boxes'][ann_idx][0]
+                gt_box_dict['x2'] = annotation['boxes'][ann_idx][1]
+                gt_box_dict['y1'] = annotation['boxes'][ann_idx][2]
+                gt_box_dict['y2'] = annotation['boxes'][ann_idx][3]
+                gt_box_dict['bbox_matched'] = False
+                img_data.append(gt_box_dict)
+            t, p = get_map(predictions, img_data)
+            for key in t.keys():
+                if key not in T:
+                    T[key] = []
+                    P[key] = []
+                T[key].extend(t[key])
+                P[key].extend(p[key])
+    all_aps = []
+    for key in T.keys():
+        ap = average_precision_score(T[key], P[key])
+        print('{} AP: {}'.format(key, ap))
+        all_aps.append(ap)
+    print('mAP = {}'.format(np.mean(np.array(all_aps))))
 
 
 def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config, wandb_config):
     print('Starting to train model...')
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
+<<<<<<< HEAD:herbie_vision/train.py
+    for epoch in range(2): #(train_config['num_epochs']):
+=======
     for epoch in range(wandb_config.num_epochs):
+>>>>>>> 5cb383899699d874e68e5334a2fe628609b6381b:herbie_vision/model/model_training/train.py
         print('Starting Epoch_{}'.format(epoch))
         model.train()
         total_losses = []
@@ -40,6 +89,7 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
             
             # Perform forward pass
             loss_dict = model(imgs, annotations)
+            print(loss_dict)
             losses = sum(loss for loss in loss_dict.values())
 
             # Back propagate errors
