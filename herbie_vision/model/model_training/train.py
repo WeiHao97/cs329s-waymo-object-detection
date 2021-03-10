@@ -117,7 +117,7 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
 
         # Evaluation on validation data
         print('Evaluating model on validation set...')
-        # evaluate(model, valid_dataloader)
+        evaluate(model, valid_dataloader)
 
 
 
@@ -184,14 +184,9 @@ if __name__=="__main__":
                                 wandb_config.area_limit)
     train_dataloader = data.DataLoader(train_dataset, batch_size=wandb_config.batch_size, collate_fn=collate_fn)
 
-    # Omit these while testing scripts
-    # valid_dataset = WaymoDataset('waymo-processed', train_config['valid_dataset'],train_config['root'],
-    #                             'valid', train_config['category_names'], train_config['category_ids'])
-    # valid_dataloader = data.DataLoader(valid_dataset, batch_size=config['batch_size'], collate_fn=collate_fn)
-
-    # test_dataset = WaymoDataset('waymo-processed', train_config['test_dataset'], train_config['root'], 
-    #                             'test', train_config['category_names'], train_config['category_ids'])
-    # test_dataloader = data.DataLoader(test_dataset, batch_size=config['batch_size'], collate_fn=collate_fn)
+    valid_dataset = WaymoDataset('waymo-processed', train_config['valid_dataset'],train_config['root'],
+                                'valid', train_config['category_names'], train_config['category_ids'])
+    valid_dataloader = data.DataLoader(valid_dataset, batch_size=config['batch_size'], collate_fn=collate_fn)
 
 
     # Initialize model and optimizer
@@ -205,4 +200,4 @@ if __name__=="__main__":
                                                gamma=0.95)
 
     # Train model
-    train(model, optimizer, lr_scheduler, train_dataloader, None, train_config, wandb_config)
+    train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config, wandb_config)
