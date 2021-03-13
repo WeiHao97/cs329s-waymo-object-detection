@@ -7,7 +7,7 @@
 
 run-streamlit-container-locally:
 	@docker build herbie_vision/streamlit_app/. -t herbie_vision
-	@docker run -p 8080:8080 herbie_vision
+	@docker run -p 8080:8080 --cap-add SYS_ADMIN --device /dev/fuse herbie_vision
 
 
 gcloud-deploy-web-application:
