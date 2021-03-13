@@ -11,9 +11,9 @@ import matplotlib.patches as patches
 
 
 
-def annotations_to_df(annotations, path):
+def annotations_to_df(annotations, mount_dir, image_map):
     df = pd.DataFrame(annotations['annotations'])
-    df['filename'] = df['image_id'].apply(lambda x :path+'{}.jpeg'.format(x))
+    df['gcp_path'] = df['image_id'].apply(lambda x: mount_dir + image_map[x])
     df['x_min'] = df['bbox'].apply(lambda x: x[0])
     df['y_min'] = df['bbox'].apply(lambda x: x[1])
     df['width'] = df['bbox'].apply(lambda x: x[2])
@@ -63,8 +63,8 @@ def resize_image_bb(read_path,write_path,bb,sz):
 def process_resizing(resized_path, annotations_df, sz):
     new_paths = []
     new_bbs = []
-    for index, row in annotations_df[['filename','x_min','y_min','x_max','y_max']].iterrows():
-        new_path,new_bb = resize_image_bb(row['filename'], resized_path,
+    for index, row in annotations_df[['gcp_path','x_min','y_min','x_max','y_max']].iterrows():
+        new_path,new_bb = resize_image_bb(row['gcp_path'], resized_path,
                                           np.array(row[['x_min','y_min','x_max','y_max']]),sz)
         new_paths.append(new_path)
         new_bbs.append(new_bb)

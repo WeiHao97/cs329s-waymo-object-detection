@@ -140,7 +140,7 @@ def bb_intersection_over_union(boxA, boxB):
     return iou
 
 
-def concatenateJSON(paths, root_dir, dataset_type, new_file_name, gcp_bucket="waymo-processed"):
+def concatenateJSON(paths, mount_dir, write_path, gcp_bucket="waymo-processed"):
     """
     :param paths: list of annotation file paths to concatenate
     :return: gcp path containing JSON concatenatation of input annotation files
@@ -157,17 +157,11 @@ def concatenateJSON(paths, root_dir, dataset_type, new_file_name, gcp_bucket="wa
 
     """
 
-    gcp_curated_annotations_path = "train/curated_annotations/" + new_file_name
-
     return_file = "tmpFile.json"
     return_dict = {}
     for gcp_annotations_path in paths:
 
-        download_blob(gcp_bucket,
-                      gcp_annotations_path,
-                      root_dir + dataset_type + '/' + 'annotations.json')
-
-        f = open(root_dir + dataset_type + '/' + 'annotations.json', 'r')
+        f = open(mount_dir + gcp_annotations_path, 'r')
         data = json.load(f)
 
         if len(return_dict) == 0:
@@ -188,9 +182,6 @@ def concatenateJSON(paths, root_dir, dataset_type, new_file_name, gcp_bucket="wa
     with open(return_file, "w") as f:
         json.dump(return_dict, f)
 
-    upload_blob(gcp_bucket, return_file, gcp_curated_annotations_path)
+    upload_blob(gcp_bucket, return_file, write_path)
 
     os.remove(return_file)
-    os.remove(root_dir + dataset_type + '/' + 'annotations.json')
-
-    return gcp_curated_annotations_path

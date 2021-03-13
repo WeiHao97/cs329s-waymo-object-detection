@@ -51,7 +51,7 @@ gcloud-train-job:
 	  --image-family=pytorch-latest-cpu \
 	  --image-project=deeplearning-platform-release \
 	  --machine-type e2-standard-8 \
-	  --boot-disk-size 200 \
+	  --boot-disk-size 100 \
 	  --metadata-from-file startup-script=mount.sh
 	@sleep 120
 	@gcloud compute scp --recurse <path_to_model_training_script_and_config> pytorch-cpu:/tmp
