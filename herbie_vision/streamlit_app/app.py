@@ -142,11 +142,13 @@ with row5_2:
     st.write("""
         ## Peter
         Interested in robotics and how we can leverage reinforcement learning to tackle challenging robot control problems.
-        Passionate about realizing the positive impacts aritficial intelligence can have on society. Outside of these topics
+        Passionate about realizing the positive impacts artificial intelligence can have on society. Outside of these topics
         I like to bike, swim and lift weights. 
         """)
 with row5_3:
     st.write("""
         ## Tiffany
-        some textsome textsome textsome textsome textsome textsome textsome textsome textsome textsome textsome textsome textsome text
+        Passionate about leveraging computer science technology for social impact and technical exploration. 
+        Interested in dogs, music composition, (easy) hikes, and how to balance software engineering and alpaca farming 
+        careers long term. 
         """)
