@@ -1,15 +1,12 @@
 apiVersion: v1
 kind: Pod
 metadata:
- name: gke-training-pod
+ name: training-pod
 spec:
  restartPolicy: Never
  containers:
  - name: my-custom-container
    image: url_to_container_image
-   resources:
-     limits:
-       nvidia.com/gpu: 1
    env:
    - name: WANDB_API_KEY
      valueFrom:

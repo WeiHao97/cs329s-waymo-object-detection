@@ -21,17 +21,18 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 class WaymoDataset(data.Dataset):
-    def __init__(self, gcp_bucket, gcp_annotations_path, root_dir, dataset_type, cat_names, cat_ids, resize, area_limit):
+    def __init__(self, mount_dir, gcp_annotations_path, cat_names, cat_ids, resize, area_limit):
         super(WaymoDataset, self).__init__()
         
         # filepaths
-        self.gcp_bucket = gcp_bucket
         self.gcp_annotations_path = gcp_annotations_path
-        self.root_dir = root_dir
-        self.dataset_type = dataset_type 
-        self.local_path_to_images = self.root_dir+self.dataset_type+'/images/'
-        self.local_path_to_processed_images = self.root_dir+self.dataset_type+'/images_processed/'
-        self.local_path_to_weights = self.root_dir+'model_weights/'
+        self.mount_dir = mount_dir
+
+        self.dataset_name =  self.gcp_annotations_path.split('/')[-1].replace('.json','')
+        self.dataset_path =  self.mount_dir +'/'.join(self.gcp_annotations_path.split('/')[:-2]) 
+        self.path_to_annotations = self.mount_dir + self.gcp_annotations_path
+        self.path_to_processed_images = self.dataset_path+'/processed_images/'
+        self.path_to_metadata = self.dataset_path + '/metadata/'
         
         # high level summary values
         self.num_classes = len(cat_names)
@@ -42,68 +43,27 @@ class WaymoDataset(data.Dataset):
         
         # setup data directory
         print('Setting up data directories...')
-        if os.path.exists(self.root_dir)==False:
-            os.mkdir(self.root_dir)
-        if os.path.exists(self.local_path_to_weights)==False:
-            os.mkdir(self.local_path_to_weights)
-        if os.path.exists(self.root_dir+self.dataset_type+'/')==False:
-            os.mkdir(self.root_dir+self.dataset_type+'/')
-            os.mkdir(self.local_path_to_images)
-            os.mkdir(self.local_path_to_processed_images)
+        if os.path.exists(self.path_to_processed_images)==False:
+            os.mkdir(self.path_to_processed_images)
 
-            # read in annotations
-            client = storage.Client()
-            bucket = client.get_bucket(self.gcp_bucket)        
-            download_blob(self.gcp_bucket,
-                            self.gcp_annotations_path,
-                            self.root_dir+ self.dataset_type + '/' + 'annotations.json')
-            
-            f = open(self.root_dir+ self.dataset_type + '/' + 'annotations.json','r')
+            # read annotations file
+            f = open(self.path_to_annotations,'r')
             self.annotations = json.load(f)
             f.close()
             
-
-        
-            
-            print('Downloading and processing images...')
             # convert annotations to dataframe
-            self.annotations_df = annotations_to_df(self.annotations, self.local_path_to_images)
-            self.annotations_df['category_id'] = self.annotations_df['category_id'].apply(lambda x: 3 if x==4 else x) # map so categorise are contiguous
-
-
+            print('Processing images...')
+            image_map = {entry['id']:'/'+'/'.join(entry['gcp_url'].split('/')[3::]) for entry in annotations['images']}
+            self.annotations_df = annotations_to_df(self.annotations, self.mount_dir, image_map)
+            self.annotations_df['category_id'] = self.annotations_df['category_id'].apply(lambda x: 3 if x==4 else x) # map so categories are contiguous
             
-            # determine segment paths
-            self.segment_paths = []
-            for image in self.annotations['images']:
-                uri = image['gcp_url']
-                segment = '/'.join(uri.split('/')[3:7])+'/'
-                if segment not in self.segment_paths:
-                    self.segment_paths.append(segment)
-            
-            
-            # Download images for segments to local folder
-            for segment in self.segment_paths:
-                blobs = bucket.list_blobs(prefix=segment, delimiter='/')
-                for blob in list(blobs):
-                    filename=blob.name.replace(segment,'')
-                    blob.download_to_filename(self.local_path_to_images+'{}'.format(filename))
-
             # Preprocess images to be the same size
             print('Processing images...')
-            self.annotations_df = process_resizing(self.local_path_to_processed_images, self.annotations_df,resize)
-            self.annotations_df.to_csv(self.root_dir+ self.dataset_type + '/processed_annotations.csv' )
+            self.annotations_df = process_resizing(self.path_to_processed_images, self.annotations_df, resize)
+            self.annotations_df.to_csv(self.path_to_annotations + '/processed_annotations.csv')
         else:
             # read in annotations
-            client = storage.Client()
-            bucket = client.get_bucket(self.gcp_bucket)        
-            download_blob(self.gcp_bucket,
-                            self.gcp_annotations_path,
-                            self.root_dir+ self.dataset_type + '/' + 'annotations.json')
-            
-            f = open(self.root_dir+ self.dataset_type + '/' + 'annotations.json','r')
-            self.annotations = json.load(f)
-            f.close()
-            self.annotations_df = pd.read_csv(self.root_dir+ self.dataset_type + '/processed_annotations.csv')
+            self.annotations_df = pd.read_csv('/'.join(self.path_to_annotations.split('/')[:-1]) + '/processed_annotations.csv')
 
         # Drop bounding boxes which are too small
         self.annotations_df['r_area'] = (self.annotations_df['xr_max'] - self.annotations_df['xr_min'])*(self.annotations_df['yr_max'] - self.annotations_df['yr_min'])

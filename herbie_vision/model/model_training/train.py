@@ -76,11 +76,7 @@ def evaluate(model, dataloader):
 def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config, wandb_config):
     print('Starting to train model...')
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
-<<<<<<< HEAD:herbie_vision/train.py
-    for epoch in range(2): #(train_config['num_epochs']):
-=======
     for epoch in range(wandb_config.num_epochs):
->>>>>>> 5cb383899699d874e68e5334a2fe628609b6381b:herbie_vision/model/model_training/train.py
         print('Starting Epoch_{}'.format(epoch))
         model.train()
         total_losses = []
@@ -127,7 +123,7 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
 
         # Evaluation on validation data
         print('Evaluating model on validation set...')
-        # evaluate(model, valid_dataloader)
+        evaluate(model, valid_dataloader)
 
 
 
@@ -180,7 +176,10 @@ if __name__=="__main__":
     area_limit=5000
     )
 
-    wandb.init(config=hyperparameter_defaults)
+    wandb.init(config=hyperparameter_defaults, 
+                project=train_config['wandb_project'], 
+                entity=train_config['wandb_entity'], 
+                name=train_config['wandb_name'])
     wandb_config = wandb.config
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] =  base_config['gcp_credentials']
 
@@ -191,14 +190,9 @@ if __name__=="__main__":
                                 wandb_config.area_limit)
     train_dataloader = data.DataLoader(train_dataset, batch_size=wandb_config.batch_size, collate_fn=collate_fn)
 
-    # Omit these while testing scripts
-    # valid_dataset = WaymoDataset('waymo-processed', train_config['valid_dataset'],train_config['root'],
-    #                             'valid', train_config['category_names'], train_config['category_ids'])
-    # valid_dataloader = data.DataLoader(valid_dataset, batch_size=config['batch_size'], collate_fn=collate_fn)
-
-    # test_dataset = WaymoDataset('waymo-processed', train_config['test_dataset'], train_config['root'], 
-    #                             'test', train_config['category_names'], train_config['category_ids'])
-    # test_dataloader = data.DataLoader(test_dataset, batch_size=config['batch_size'], collate_fn=collate_fn)
+    valid_dataset = WaymoDataset('waymo-processed', train_config['valid_dataset'],train_config['root'],
+                                'valid', train_config['category_names'], train_config['category_ids'])
+    valid_dataloader = data.DataLoader(valid_dataset, batch_size=config['batch_size'], collate_fn=collate_fn)
 
 
     # Initialize model and optimizer
@@ -212,4 +206,4 @@ if __name__=="__main__":
                                                gamma=0.95)
 
     # Train model
-    train(model, optimizer, lr_scheduler, train_dataloader, None, train_config, wandb_config)
+    train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config, wandb_config)

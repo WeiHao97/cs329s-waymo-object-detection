@@ -1,4 +1,6 @@
-opencv-python
+wheel
+setuptools
+opencv-python<4.3
 numpy
 requests
 flask
@@ -12,3 +14,4 @@ argparse
 tqdm
 wandb
 pandas
+matplotlib
