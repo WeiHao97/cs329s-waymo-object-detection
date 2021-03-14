@@ -3,6 +3,10 @@ import streamlit as st
 from PIL import Image
 from herbie_vision.utils.image import plot_annotations
 
+import requests
+import json
+import numpy as np
+
 
 def generate_prediction_image(imgfile, rest_api):
     """
@@ -36,7 +40,7 @@ st.set_page_config(page_title="Awesome Object Detection",
 # HEADER SECTION
 row1_1, row1_2 = st.beta_columns((2,3))
 with row1_1:
-    st.title("Detecting Vehicles, Pedestrian and Cyclists")
+    st.title("Detecting Vehicles, Pedestrians and Cyclists")
 
 with row1_2:
     st.write(
