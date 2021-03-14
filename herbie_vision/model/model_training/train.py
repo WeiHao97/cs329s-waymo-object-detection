@@ -16,6 +16,7 @@ from herbie_vision.utils.train_utils import get_fast_rcnn, track_metrics, collat
 
 import sklearn.metrics
 from sklearn.metrics import average_precision_score
+from sklearn.metrics import recall_score
 
 import wandb
 
@@ -60,10 +61,15 @@ def evaluate(model, dataloader):
                 T[key].extend(t[key])
                 P[key].extend(p[key])
     all_aps = []
+    all_recall = []
     for key in T.keys():
+        recall = recall_score(T[key], P[key])
+        print('{} Recall: {}'.format(key, recall))
         ap = average_precision_score(T[key], P[key])
         print('{} AP: {}'.format(key, ap))
         all_aps.append(ap)
+        all_recall.append(recall)
+    print('Average Recall = {}'.format(round(sum(all_recall)/len(all_recall), 2))
     print('mAP = {}'.format(np.mean(np.array(all_aps))))
 
 
