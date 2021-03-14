@@ -136,7 +136,9 @@ row5_1, row5_2, row5_3 = st.beta_columns((1.5,1.5,1.5))
 with row5_1:
     st.write("""
         ## Ethan
-        Some text some text some textsome textsome textsome textsome textsome textsome textsome text
+        Interested in computer vision, aerospace, and human-computer interaction. Passionate about leveraging these 
+        to create a cleaner, smarter, and healthier world. Outside of the classroom, I spend my free time learning new songs on guitar,
+        walking dogs, snowboarding, playing basketball, backpacking, watching The Office, and hanging out with friends + family.
         """)
 with row5_2:
     st.write("""
