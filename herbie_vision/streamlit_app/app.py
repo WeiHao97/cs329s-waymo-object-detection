@@ -40,6 +40,8 @@ st.set_page_config(page_title="Awesome Object Detection",
 # HEADER SECTION
 row1_1, row1_2 = st.beta_columns((2,3))
 with row1_1:
+    header_img = Image.open('/assets/project_logo.png')
+    st.image(header_img)
     st.title("Detecting Vehicles, Pedestrians and Cyclists")
 
 with row1_2:
