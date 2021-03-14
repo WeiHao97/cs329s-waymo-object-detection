@@ -52,7 +52,7 @@ with row1_2:
 row2_1, row2_2, row2_3 = st.beta_columns((1.5,1.5,1.5))
 
 with row2_1:
-    st.selectbox('Location', ('San Franciso', 'Phoenix', 'Other'))
+    st.selectbox('Location', ('San Francisco', 'Phoenix', 'Other'))
 with row2_2:
     st.selectbox('Time of Day', ('Day', 'Dawn/Dusk', 'Night'))
 with row2_3:
