@@ -1,0 +1,21 @@
+# Data storage bucket
+bucket: 'waymo-processed'
+
+# Directories
+root: '/home/waymo/data'
+
+# Categories
+category_names: ['TYPE_VEHICLE','TYPE_PEDESTRIAN','TYPE_CYCLIST']
+category_ids: [1,2,3]
+num_classes: 4 #including background class
+resize: [1152, 768]
+
+# Datasets
+train_dataset: '/train/curated_datasets/core_dataset/annotations/core_dataset.json'
+test_dataset: '/test/curated_datasets/core_dataset/annotations/core_dataset.json'
+valid_dataset: '/validation/curated_datasets/core_dataset/annotations/core_dataset.json'
+
+# weights and biases
+wandb_project: 'waymo-2d-object-detection'
+wandb_entity: 'peterdavidfagan'
+wandb_name: 'test-run'

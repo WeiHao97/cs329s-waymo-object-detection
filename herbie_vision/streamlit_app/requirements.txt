@@ -1,7 +1,0 @@
-streamlit
-Pillow
-numpy
-pandas
-opencv-python
-matplotlib
-herbie-vision==0.1.3
