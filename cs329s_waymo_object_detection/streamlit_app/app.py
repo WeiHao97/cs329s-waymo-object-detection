@@ -126,7 +126,7 @@ st.markdown('''# Model Evaluation''')
 st.markdown('#')
 st.markdown('We are big fans of Weights and Biases, you may find some further details on the training runs we ran below:')
 st.image('./assets/wandb.png',width=400)
-st.components.v1.iframe('https://wandb.ai/peterdavidfagan/waymo-2d-object-detection?workspace=user-peterdavidfagan',height=900, , scrolling = True)
+st.components.v1.iframe('https://wandb.ai/peterdavidfagan/waymo-2d-object-detection?workspace=user-peterdavidfagan',height=900, scrolling = True)
 
 st.markdown('#')
 # MODEL DEPLOYMENT SECTION
