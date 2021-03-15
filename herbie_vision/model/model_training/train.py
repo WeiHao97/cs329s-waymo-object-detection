@@ -16,6 +16,7 @@ from herbie_vision.utils.train_utils import get_fast_rcnn, track_metrics, collat
 
 import sklearn.metrics
 from sklearn.metrics import average_precision_score
+from sklearn.metrics import recall_score
 
 import wandb
 

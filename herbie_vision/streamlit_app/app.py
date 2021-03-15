@@ -3,6 +3,10 @@ import streamlit as st
 from PIL import Image
 from herbie_vision.utils.image import plot_annotations
 
+import requests
+import json
+import numpy as np
+
 
 def generate_prediction_image(imgfile, rest_api):
     """
@@ -36,7 +40,9 @@ st.set_page_config(page_title="Awesome Object Detection",
 # HEADER SECTION
 row1_1, row1_2 = st.beta_columns((2,3))
 with row1_1:
-    st.title("Detecting Vehicles, Pedestrian and Cyclists")
+    header_img = Image.open('./assets/project_logo.png')
+    st.image(header_img)
+    st.title("Detecting Vehicles, Pedestrians and Cyclists")
 
 with row1_2:
     st.write(
@@ -52,7 +58,7 @@ with row1_2:
 row2_1, row2_2, row2_3 = st.beta_columns((1.5,1.5,1.5))
 
 with row2_1:
-    st.selectbox('Location', ('San Franciso', 'Phoenix', 'Other'))
+    st.selectbox('Location', ('San Francisco', 'Phoenix', 'Other'))
 with row2_2:
     st.selectbox('Time of Day', ('Day', 'Dawn/Dusk', 'Night'))
 with row2_3:
@@ -136,17 +142,21 @@ row5_1, row5_2, row5_3 = st.beta_columns((1.5,1.5,1.5))
 with row5_1:
     st.write("""
         ## Ethan
-        Some text some text some textsome textsome textsome textsome textsome textsome textsome text
+        Interested in computer vision, aerospace, and human-computer interaction. Passionate about leveraging these 
+        to create a cleaner, smarter, and healthier world. Outside of the classroom, I spend my free time learning new songs on guitar,
+        walking dogs, snowboarding, playing basketball, backpacking, watching The Office, and hanging out with friends + family.
         """)
 with row5_2:
     st.write("""
         ## Peter
         Interested in robotics and how we can leverage reinforcement learning to tackle challenging robot control problems.
-        Passionate about realizing the positive impacts aritficial intelligence can have on society. Outside of these topics
+        Passionate about realizing the positive impacts artificial intelligence can have on society. Outside of these topics
         I like to bike, swim and lift weights. 
         """)
 with row5_3:
     st.write("""
         ## Tiffany
-        some textsome textsome textsome textsome textsome textsome textsome textsome textsome textsome textsome textsome textsome text
+        Passionate about leveraging computer science technology for social impact and technical exploration. 
+        Interested in dogs, music composition, (easy) hikes, and how to balance software engineering and alpaca farming 
+        careers long term. 
         """)
