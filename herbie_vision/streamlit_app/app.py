@@ -66,28 +66,28 @@ st.markdown("#")
 #Plotting Driving Segment With Predictions
 row3_1, row3_2, row3_3 = st.beta_columns((1.5,1.5,1.5))
 with row3_1:
-    img_fl = Image.open('/home/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
+    img_fl = Image.open('/home/waymo/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
     st.markdown("## Front Left Camera")
     st.image(img_fl)
 with row3_2:
-    img_f = Image.open('/home/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
+    img_f = Image.open('/home/waymo/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
     st.markdown("## Front Center Camera")
     st.image(img_f)
 with row3_3:
-    img_fr = Image.open('/home/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
+    img_fr = Image.open('/home/waymo/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
     st.markdown("## Front Right Camera")
     st.image(img_fr)
 
 row4_1, row4_2, row4_3 = st.beta_columns((1.5, 1.5,1.5))
 with row4_1:
-    img_l = Image.open('/home/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
+    img_l = Image.open('/home/waymo/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
     st.markdown("## Left Camera")
     st.image(img_l)
 with row4_2:
     st.markdown("")
     
 with row4_3:
-    img_r = Image.open('/home/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
+    img_r = Image.open('/home/waymo/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
     st.markdown("## Right Camera")
     st.image(img_r)
 
@@ -120,7 +120,7 @@ st.markdown('''# Model Evaluation''')
 st.markdown('#')
 st.markdown('We are big fans of Weights and Biases, you may find some further details on the training runs we ran below:')
 st.image('./assets/wandb.png',width=400)
-st.components.v1.iframe('https://wandb.ai/peterdavidfagan/waymo-2d-object-detection?workspace=user-peterdavidfagan',height=900)
+st.components.v1.iframe('https://wandb.ai/peterdavidfagan/waymo-2d-object-detection?workspace=user-peterdavidfagan',height=900, , scrolling = True)
 
 st.markdown('#')
 # MODEL DEPLOYMENT SECTION

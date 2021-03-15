@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: streamlitweb
+  labels:
+    app: streamlit
+spec:
+  selector:
+    matchLabels:
+      app: streamlit
+      tier: web
+  template:
+    metadata:
+      labels:
+        app: streamlit
+        tier: web
+    spec:
+      containers:
+      - name: streamlit-app
+        image: gcr.io/waymo-2d-object-detection/app:latest
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /home/waymo/data
+          name: datasets
+      volumes:
+        - name: datasets
+          persistentVolumeClaim:
+            claimName: fileserver-claim
+            readOnly: true

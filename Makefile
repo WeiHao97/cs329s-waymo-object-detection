@@ -15,7 +15,7 @@ gcloud-deploy-web-application:
 	@gcloud container clusters get-credentials thor --zone us-central1-c --project waymo-2d-object-detection
 	@kubectl create secret docker-registry mycred \
 			 --docker-server=registry.hub.docker.com/peterdavidfagan/cs329s-prediction --docker-username=peterdavidfagan \
-			 --docker-password=<docker-password>  \
+			 --docker-password=<>  \
 			 --docker-email=peterdavidfagan@gmail.com
 	@kubectl apply -f ./config/model_serving/basic_pod.yaml
 	@echo 'Wating for pods to be created...'
@@ -51,14 +51,16 @@ gcloud-train-job:
 	  --image-family=pytorch-latest-cpu \
 	  --image-project=deeplearning-platform-release \
 	  --machine-type e2-standard-8 \
+	  --accelerators="type=nvidia-tesla-t4,count=1" \
 	  --boot-disk-size 100 \
+
 	  --metadata-from-file startup-script=mount.sh
 	@sleep 120
-	@gcloud compute scp --recurse <path_to_model_training_script_and_config> pytorch-cpu:/tmp
+	@gcloud compute scp --recurse /Users/peterfagan/Code/herbie-vision/herbie_vision/model/model_training/ pytorch-cpu:/tmp
 	@gcloud compute ssh pytorch-cpu --command "sudo mv /tmp/* /home/waymo"
 	@gcloud compute ssh pytorch-cpu --command "pip3 install --upgrade pip setuptools wheel"
 	@gcloud compute ssh pytorch-cpu --command "cd /home/waymo && pip3 install -r requirements.txt"
-	@gcloud compute ssh pytorch-cpu --command "export WANDB_API_KEY=<wandb-api-key> && \
+	@gcloud compute ssh pytorch-cpu --command "export WANDB_API_KEY=<> && \
 											   cd /home/waymo && \
 											   python3 train.py 'gcp_credentials.yaml' 'train.yaml'"
 	@gcloud compute instances delete pytorch-cpu --quiet

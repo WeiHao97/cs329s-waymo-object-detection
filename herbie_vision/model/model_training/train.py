@@ -21,56 +21,59 @@ import wandb
 
 
 def evaluate(model, dataloader):
-    device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.eval()
-    T = {}
-    P = {}
-    for imgs, annotations in tqdm(dataloader):
-        imgs = [img.to(device) for img in imgs]
-        annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
-        
-        for idx, img in enumerate(imgs):
-            model_pred = model(img)
-            img_annotations = annotations[idx]
-            predictions = []
-            for pred_idx, pred in enumerate(model_pred):
-                pred_box_dict = {}
-                pred_box_dict['class'] = pred['labels'][pred_idx]
-                pred_box_dict['x1'] = pred['boxes'][pred_idx][0]
-                pred_box_dict['x2'] = pred['boxes'][pred_idx][1]
-                pred_box_dict['y1'] = pred['boxes'][pred_idx][2]
-                pred_box_dict['y2'] = pred['boxes'][pred_idx][3]
-                pred_box_dict['prob'] = pred['scores'][pred_idx]
-                predictions.append(pred_box_dict)
-            img_data = []
-            for ann_idx, annotation in enumerate(img_annotations):
-                gt_box_dict = {}
-                gt_box_dict['class'] = annotation['labels'][ann_idx]
-                gt_box_dict['x1'] = annotation['boxes'][ann_idx][0]
-                gt_box_dict['x2'] = annotation['boxes'][ann_idx][1]
-                gt_box_dict['y1'] = annotation['boxes'][ann_idx][2]
-                gt_box_dict['y2'] = annotation['boxes'][ann_idx][3]
-                gt_box_dict['bbox_matched'] = False
-                img_data.append(gt_box_dict)
-            t, p = get_map(predictions, img_data)
-            for key in t.keys():
-                if key not in T:
-                    T[key] = []
-                    P[key] = []
-                T[key].extend(t[key])
-                P[key].extend(p[key])
-    all_aps = []
-    for key in T.keys():
-        ap = average_precision_score(T[key], P[key])
-        print('{} AP: {}'.format(key, ap))
-        all_aps.append(ap)
-    print('mAP = {}'.format(np.mean(np.array(all_aps))))
+    with torch.no_grad():
+      T = {}
+      P = {}
+      for imgs, annotations in tqdm(valid_dataloader):
+          imgs = [img.to(device) for img in imgs]
+          annotations = [{k: v for k, v in t.items()} for t in annotations]
+          model_preds = model(imgs)
+          for idx, img in enumerate(imgs):
+              model_pred = model_preds[idx]
+              model_pred = {entry:model_pred[entry].detach().to('cpu').numpy() for entry in model_pred}
+              img_annotations = annotations[idx]
+              predictions = []
+              for pred_idx in range(len(model_pred['boxes'])):
+                  pred_box_dict = {}
+                  pred_box_dict['class'] = model_pred['labels'][pred_idx]
+                  pred_box_dict['x1'] = model_pred['boxes'][pred_idx][0]
+                  pred_box_dict['x2'] = model_pred['boxes'][pred_idx][2]
+                  pred_box_dict['y1'] = model_pred['boxes'][pred_idx][1]
+                  pred_box_dict['y2'] = model_pred['boxes'][pred_idx][3]
+                  pred_box_dict['prob'] = model_pred['scores'][pred_idx]
+                  predictions.append(pred_box_dict)
+              img_data = []
+              for ann_idx in range(len(img_annotations['boxes'])):
+                  gt_box_dict = {}
+                  gt_box_dict['class'] = img_annotations['labels'][ann_idx]
+                  gt_box_dict['x1'] = img_annotations['boxes'][ann_idx][0]
+                  gt_box_dict['x2'] = img_annotations['boxes'][ann_idx][2]
+                  gt_box_dict['y1'] = img_annotations['boxes'][ann_idx][1]
+                  gt_box_dict['y2'] = img_annotations['boxes'][ann_idx][3]
+                  gt_box_dict['bbox_matched'] = False
+                  img_data.append(gt_box_dict)
+              t, p = get_map(predictions, img_data)
+              for key in t.keys():
+                  if key not in T:
+                      T[key] = []
+                      P[key] = []
+                  T[key].extend(t[key])
+                  P[key].extend(p[key])
+      all_aps = []
+      for key in T.keys():
+          ap = average_precision_score(T[key], P[key])
+          print('{} AP: {}'.format(key, ap))
+          all_aps.append(ap)
+      print('mAP = {}'.format(np.mean(np.array(all_aps))))
+      wandb.log({'mAP':np.mean(np.array(all_aps))})
 
 
 def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config, wandb_config):
     print('Starting to train model...')
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
     for epoch in range(wandb_config.num_epochs):
+        model.train()
         print('Starting Epoch_{}'.format(epoch))
         model.train()
         total_losses = []
@@ -112,12 +115,13 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
         track_metrics(loss, classifier_loss, box_reg_loss, objectness_loss, rpn_loss, epoch)
 
         print('Saving model weights...')
-        torch.save(model.state_dict(), train_config['root']+"model_weights/weights_{}.pth".format(epoch))
-        wandb.save(train_config['root']+"model_weights/weights_{}.pth".format(epoch))
+        torch.save(model.state_dict(), train_config['root']+"/model_weights/weights_{}.pth".format(epoch))
+        wandb.save(train_config['root']+"/model_weights/weights_{}.pth".format(epoch))
 
         # Evaluation on validation data
-        print('Evaluating model on validation set...')
-        evaluate(model, valid_dataloader)
+        if (epoch!=0)&(epoch%2==0):
+          print('Evaluating model on validation set...')
+          evaluate(model, valid_dataloader)
 
 
 
@@ -179,13 +183,15 @@ if __name__=="__main__":
 
 
     # Initialize datasets + folders
-    train_dataset = WaymoDataset(train_config['bucket'],train_config['train_dataset'],train_config['root'], train_config['train_folder'],
-                                train_config['category_names'], train_config['category_ids'], train_config['resize'],
+    train_dataset = WaymoDataset(train_config['root_dir'], train_config['train_dataset'], train_config['category_names'], train_config['category_ids'], train_config['resize'],
                                 wandb_config.area_limit)
+
+    train_dataset = WaymoDataset(train_config['bucket'],train_config['train_dataset'],train_config['root'], train_config['train_folder'],
+                                )
     train_dataloader = data.DataLoader(train_dataset, batch_size=wandb_config.batch_size, collate_fn=collate_fn)
 
-    valid_dataset = WaymoDataset('waymo-processed', train_config['valid_dataset'],train_config['root'],
-                                'valid', train_config['category_names'], train_config['category_ids'])
+    valid_dataset = WaymoDataset(train_config['root_dir'], train_config['valid_dataset'], train_config['category_names'], train_config['category_ids'], train_config['resize'],
+                                wandb_config.area_limit)
     valid_dataloader = data.DataLoader(valid_dataset, batch_size=config['batch_size'], collate_fn=collate_fn)
 
 

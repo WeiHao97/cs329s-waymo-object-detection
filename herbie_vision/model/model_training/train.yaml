@@ -2,8 +2,7 @@
 bucket: 'waymo-processed'
 
 # Directories
-root: '/home/waymo/data/'
-train_folder: 'train'
+root: '/home/waymo/data'
 
 # Categories
 category_names: ['TYPE_VEHICLE','TYPE_PEDESTRIAN','TYPE_CYCLIST']
@@ -12,9 +11,9 @@ num_classes: 4 #including background class
 resize: [1152, 768]
 
 # Datasets
-train_dataset: 'train/annotations/2019-05-22/11940460932056521663_1760_000_1780_000.json'
-test_dataset: 'test/annotations/2019-06-01/2942662230423855469_880_000_900_000.json'
-valid_dataset: 'validation/annotations/2019-05-22/16229547658178627464_380_000_400_000.json'
+train_dataset: '/train/curated_datasets/core_dataset/annotations/core_dataset.json'
+test_dataset: '/test/curated_datasets/core_dataset/annotations/core_dataset.json'
+valid_dataset: '/validation/curated_datasets/core_dataset/annotations/core_dataset.json'
 
 # weights and biases
 wandb_project: 'waymo-2d-object-detection'
