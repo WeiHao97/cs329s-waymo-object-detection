@@ -1,5 +1,5 @@
 # Specify the zone for this resource
---zone:  us-central1-c
+--zone:  us-central1-a
 
 # autoscaling
 --num-nodes: 3

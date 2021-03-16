@@ -12,62 +12,81 @@ import torch.utils.data as data
 import torchvision
 
 from cs329s_waymo_object_detection.datasets.waymo import WaymoDataset, collate_fn
-from cs329s_waymo_object_detection.utils.train_utils import get_fast_rcnn, track_metrics, collate_fn, get_custom_backbone_fast_rcnn, get_map
+from cs329s_waymo_object_detection.utils.train_utils import get_fast_rcnn, track_metrics, collate_fn, \
+                                                           get_custom_backbone_fast_rcnn, calc_precision_recall
 
 import sklearn.metrics
-from sklearn.metrics import average_precision_score
-from sklearn.metrics import recall_score
+from sklearn.metrics import average_precision_score, recall_score, auc
 
 import wandb
 
 
-def evaluate(model, dataloader):
+def evaluate(model, valid_dataloader, iou_vals, nms_thresh):
     model.eval()
+    gt = [] # list of ground truth boxes per image
+    preds = [] # list of predictions  per image
     with torch.no_grad():
-      T = {}
-      P = {}
       for imgs, annotations in tqdm(valid_dataloader):
+          gt.extend([{k: v for k, v in t.items()} for t in annotations])
+          
+          keeps=[] #nms indices to keep
           imgs = [img.to(device) for img in imgs]
-          annotations = [{k: v for k, v in t.items()} for t in annotations]
           model_preds = model(imgs)
-          for idx, img in enumerate(imgs):
-              model_pred = model_preds[idx]
-              model_pred = {entry:model_pred[entry].detach().to('cpu').numpy() for entry in model_pred}
-              img_annotations = annotations[idx]
-              predictions = []
-              for pred_idx in range(len(model_pred['boxes'])):
-                  pred_box_dict = {}
-                  pred_box_dict['class'] = model_pred['labels'][pred_idx]
-                  pred_box_dict['x1'] = model_pred['boxes'][pred_idx][0]
-                  pred_box_dict['x2'] = model_pred['boxes'][pred_idx][2]
-                  pred_box_dict['y1'] = model_pred['boxes'][pred_idx][1]
-                  pred_box_dict['y2'] = model_pred['boxes'][pred_idx][3]
-                  pred_box_dict['prob'] = model_pred['scores'][pred_idx]
-                  predictions.append(pred_box_dict)
-              img_data = []
-              for ann_idx in range(len(img_annotations['boxes'])):
-                  gt_box_dict = {}
-                  gt_box_dict['class'] = img_annotations['labels'][ann_idx]
-                  gt_box_dict['x1'] = img_annotations['boxes'][ann_idx][0]
-                  gt_box_dict['x2'] = img_annotations['boxes'][ann_idx][2]
-                  gt_box_dict['y1'] = img_annotations['boxes'][ann_idx][1]
-                  gt_box_dict['y2'] = img_annotations['boxes'][ann_idx][3]
-                  gt_box_dict['bbox_matched'] = False
-                  img_data.append(gt_box_dict)
-              t, p = get_map(predictions, img_data)
-              for key in t.keys():
-                  if key not in T:
-                      T[key] = []
-                      P[key] = []
-                  T[key].extend(t[key])
-                  P[key].extend(p[key])
-      all_aps = []
-      for key in T.keys():
-          ap = average_precision_score(T[key], P[key])
-          print('{} AP: {}'.format(key, ap))
-          all_aps.append(ap)
-      print('mAP = {}'.format(np.mean(np.array(all_aps))))
-      wandb.log({'mAP':np.mean(np.array(all_aps))})
+          # perform nms over predicted bounding boxes 
+          for entry in model_preds:
+            keeps.append(torchvision.ops.nms(entry['boxes'],entry['scores'],nms_thresh).to('cpu').numpy())
+
+          # filtering out predictions not included after nms
+          tmp_pred = []
+          for img_idx, model_pred in enumerate(model_preds):
+            tmp_img = {}
+            for entry in model_pred:
+              tmp_img[entry] = model_pred[entry][keeps[img_idx]].to('cpu').numpy()
+            tmp_pred.append(tmp_img)
+          preds.extend(tmp_pred)
+          
+    # create a pandas dataframe with values needed to calculate metrics
+    final_vals = []
+    for img_idx in range(len(gt)):
+      for pred_idx in range(len(preds[img_idx]['boxes'])):
+        ious = []
+        pred_box = preds[img_idx]['boxes'][pred_idx]
+        for gtb in gt[img_idx]['boxes']:
+          ious.append(np.float(bb_intersection_over_union(pred_box, gtb)))
+        gt_box = gt[img_idx]['boxes'][np.argmax(ious)]
+        gt_label = gt[img_idx]['labels'][np.argmax(ious)]
+        label = preds[img_idx]['labels'][pred_idx]
+        score = preds[img_idx]['scores'][pred_idx]
+        final_vals.append([img_idx,label, gt_label.numpy(),score,pred_box[0],pred_box[1],pred_box[2],pred_box[3],gt_box[0].numpy(),gt_box[1].numpy(),gt_box[2].numpy(),gt_box[3].numpy(),np.max(ious)])
+
+    eval_df = pd.DataFrame(final_vals, columns=['image_id','pred_label','gt_label','confidence_score','pred_x1','pred_y1','pred_x2','pred_y2','gt_x1','gt_y1','gt_x2','gt_y2','iou'])
+
+    vehicle_aps = []
+    pedestrian_aps = []
+    cyclist_aps = []
+    for iou in iou_vals:
+        precision_vehicles, recall_vehicles = calc_precision_recall(eval_df, 1, iou)
+        precision_pedestrians, recall_pedestrians = calc_precision_recall(eval_df, 2, iou)
+        precision_cyclists, recall_cyclists = calc_precision_recall(eval_df, 3, iou)
+
+        if precision_vehicles is not None:
+          vehicle_aps.append(auc(recall_vehicles, precision_vehicles))
+        if precision_pedestrians is not None:
+          pedestrian_aps.append(auc(recall_pedestrians, precision_pedestrians))
+        if precision_cyclists is not None:
+          cyclist_aps.append(auc(recall_cyclists, precision_cyclists))
+
+    vehicles_map = np.mean(vehicle_aps)
+    pedestrians_map = np.mean(pedestrian_aps)
+    cyclist_map = np.mean(cyclist_aps)
+    total_map = np.mean(vehicle_aps+pedestrian_aps+cyclist_aps)
+
+    wandb.log({'vehicles_map':vehicles_map,
+               'pedestrians_map':pedestrians_map,
+               'cyclist_map':cyclist_map,
+               'total_map':total_map
+               })
+    
 
 
 def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, train_config, wandb_config):
@@ -120,9 +139,8 @@ def train(model, optimizer, lr_scheduler, train_dataloader, valid_dataloader, tr
         wandb.save(train_config['root']+"/model_weights/weights_{}.pth".format(epoch))
 
         # Evaluation on validation data
-        if (epoch!=0)&(epoch%2==0):
-          print('Evaluating model on validation set...')
-          evaluate(model, valid_dataloader)
+        print('Evaluating model on validation set...')
+        evaluate(model, valid_dataloader, train_config['iou_vals'], train_config['nms_threshold'])
 
 
 
@@ -172,7 +190,7 @@ if __name__=="__main__":
     momentum=0.9,
     weight_decay=0.0005,
     batch_size=8,
-    area_limit=5000
+    area_limit=100
     )
 
     wandb.init(config=hyperparameter_defaults, 

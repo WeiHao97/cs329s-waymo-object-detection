@@ -1,7 +1,7 @@
 .PHONY: run-streamlit run-streamlit-container-locally gcloud-deploy-streamlit \
 		gcloud-deploy-web-application gcloud-tear-down-prediction-web-application \
 		gcloud-run-waymo-data-processing gcloud-train-job \
-		gcloud-train-sweep
+		gcloud-train-sweep gcloud-deploy-app
 
 
 
@@ -11,24 +11,30 @@ run-streamlit-container-locally:
 
 
 gcloud-deploy-web-application:
-	@gcloud container clusters create thor --flags-file ./config/model_serving/cluster_config.yaml
-	@gcloud container clusters get-credentials thor --zone us-central1-c --project waymo-2d-object-detection
-	@kubectl create secret docker-registry mycred \
-			 --docker-server=registry.hub.docker.com/peterdavidfagan/cs329s-prediction --docker-username=peterdavidfagan \
-			 --docker-password=<>  \
-			 --docker-email=peterdavidfagan@gmail.com
+	@gcloud container clusters create prediction --flags-file ./config/model_serving/cluster_config.yaml
+	@gcloud container clusters get-credentials prediction --zone us-central1-a --project waymo-2d-object-detection
 	@kubectl apply -f ./config/model_serving/basic_pod.yaml
 	@echo 'Wating for pods to be created...'
 	@sleep 240
 	@kubectl expose pod cs329s-prediction --type=LoadBalancer --port=80 --target-port 5000
 	@echo 'Wating for external ip to be initialized...'
 	@sleep 240
-	@sed -i .bak "s|.*REST_API.*|ENV REST_API=\"http://$$(kubectl get services cs329s-prediction -o json | jq '.status.loadBalancer.ingress | to_entries | .[0].value.ip' | tr -d '"')/predict\"|" ./herbie_vision/streamlit_app/Dockerfile
-	@gcloud app deploy --quiet herbie_vision/streamlit_app/app.yaml
+	@sed -i .bak "s|.*REST_API.*|ENV REST_API=\"http://$$(kubectl get services cs329s-prediction -o json | jq '.status.loadBalancer.ingress | to_entries | .[0].value.ip' | tr -d '"')/predict\"|" ./cs329s_waymo_object_detection/streamlit_app/Dockerfile
+
+gcloud-deploy-app:
+	@gcloud container clusters create streamlit --flags-file ./config/streamlit_deployment/cluster_config.yaml
+	@gcloud container clusters get-credentials streamlit --zone us-central1-a --project waymo-2d-object-detection
+	@kubectl apply -f ./config/streamlit_deployment/persistent_volume.yaml
+	@kubectl apply -f ./config/streamlit_deployment/persistent_volume_claim.yaml
+	@sleep 15
+	@kubectl apply -f ./config/streamlit_deployment/kubernetes_deployment.yaml
+	@sleep 60
+	@kubectl expose deployment streamlitweb --type=LoadBalancer --name=my-service
+	@kubectl get services
 
 
 gcloud-tear-down-prediction-web-application:
-	@gcloud container clusters delete thor --zone us-central1-c --quiet # automate zone flag in future
+	@gcloud container clusters delete streamlit --zone us-central1-c --quiet # automate zone flag in future
 	@gcloud app services delete web-application --quiet
 
 

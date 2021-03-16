@@ -6,9 +6,10 @@ from cs329s_waymo_object_detection.utils.image import plot_annotations
 import requests
 import json
 import numpy as np
+from glob import glob
 
 
-def generate_prediction_image(imgfile, rest_api):
+def generate_prediction_user_image(imgfile, rest_api):
     """
     This function requests prediction from rest_api and 
     plots bounding boxes of result over image.
@@ -31,6 +32,31 @@ def generate_prediction_image(imgfile, rest_api):
                                 0.6, save_fig_path=save_path)
 
     return save_path
+
+
+def generate_prediction_all_cameras(imgfiles, rest_api):
+    """
+    This function requests prediction from rest_api and 
+    plots bounding boxes of result over image.
+    """
+    save_path = 'prediction.jpeg'
+
+    # Make request to prediction api
+    files = {'images': [open(imgfile, 'rb') for image in imgfiles]}
+    response = requests.post(rest_api, files=files)
+
+    # Parse response
+    annotations = json.loads(response.content)
+    boxes = [np.array(x).astype(float) for x in annotations['boxes']]
+    labels = np.array(annotations['labels']).astype('int')
+    scores = np.array(annotations['scores']).astype('float')
+
+    # Create new figure
+    img = Image.open(imgfile)
+    pred_fig = plot_annotations(img, boxes, labels, scores, 
+                                0.6, save_fig_path=save_path)
+
+    return save_path
 ################################################################################
 
 st.set_page_config(page_title="Awesome Object Detection",  
@@ -38,10 +64,11 @@ st.set_page_config(page_title="Awesome Object Detection",
                     layout="wide")
 
 # HEADER SECTION
-row1_1, row1_2 = st.beta_columns((2,3))
+header_img = Image.open('./assets/project_logo.png')
+st.image(header_img, width=150)
+row1_1, row1_2 = st.beta_columns((2,3))    
+
 with row1_1:
-    header_img = Image.open('./assets/project_logo.png')
-    st.image(header_img)
     st.title("Detecting Vehicles, Pedestrians and Cyclists")
 
 with row1_2:
@@ -56,46 +83,69 @@ with row1_2:
 
 # DROP DOWN SELECTS
 row2_1, row2_2, row2_3 = st.beta_columns((1.5,1.5,1.5))
-
+location_map = {'San Francisco':'location_sf','Phoenix':'location_phx','Other':'location_other'} 
+tod_map = {'Day':'day','Dawn/Dusk':'dawn_dusk','Night':'night'} 
+weather_map = {'Sunny':'sunny', 'Rain':'rain'}
 with row2_1:
-    st.selectbox('Location', ('San Francisco', 'Phoenix', 'Other'))
+    location = st.selectbox('Location', ('San Francisco', 'Phoenix', 'Other'))
 with row2_2:
-    st.selectbox('Time of Day', ('Day', 'Dawn/Dusk', 'Night'))
+    tod = st.selectbox('Time of Day', ('Day', 'Dawn/Dusk', 'Night'))
 with row2_3:
-    st.selectbox('Weather', ('Sunny', 'Rain'))
+    weather = st.selectbox('Weather', ('Sunny', 'Rain'))
 
 # Frame Slider
-frame = st.slider("Frame",0,80,0)
+frame = st.slider("Frame",0,180,0)
 st.markdown("#")
-
-
+try:
+    segments = list(glob('/home/waymo/data/{}/{}/{}/*/'.format(location_map[location],tod_map[tod], weather_map[weather])))
+    segment = segments[np.random.randint(0,len(segments))]
+except:
+    segment = None
 #Plotting Driving Segment With Predictions
 row3_1, row3_2, row3_3 = st.beta_columns((1.5,1.5,1.5))
 with row3_1:
-    img_fl = Image.open('/home/waymo/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
-    st.markdown("## Front Left Camera")
-    st.image(img_fl)
+    try:
+        img_fl = Image.open('/home/waymo/data/{}/{}/{}/{}_{}_FRONT_LEFT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment,frame))
+        st.markdown("## Front Left Camera")
+        st.image(img_fl)
+    except:
+        st.markdown("")
+
+
 with row3_2:
-    img_f = Image.open('/home/waymo/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
-    st.markdown("## Front Center Camera")
-    st.image(img_f)
+    try:
+        img_f = Image.open('/home/waymo/data/{}/{}/{}/{}_{}_FRONT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment,frame))
+        st.markdown("## Front Center Camera")
+        st.image(img_f)
+    except:
+        st.markdown("")
 with row3_3:
-    img_fr = Image.open('/home/waymo/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
-    st.markdown("## Front Right Camera")
-    st.image(img_fr)
+    try:
+        img_fr = Image.open('/home/waymo/data/{}/{}/{}/{}_{}_FRONT_RIGHT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment,frame))
+        st.markdown("## Front Right Camera")
+        st.image(img_fr)
+    except:
+        st.markdown("")
 
 row4_1, row4_2, row4_3 = st.beta_columns((1.5, 1.5,1.5))
 with row4_1:
-    img_l = Image.open('/home/waymo/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
-    st.markdown("## Left Camera")
-    st.image(img_l)
+    try:
+        img_l = Image.open('/home/waymo/data/{}/{}/{}/{}_{}_SIDE_LEFT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment,frame))
+        st.markdown("## Left Camera")
+        st.image(img_l)
+    except:
+        st.markdown("")
+
 with row4_2:
     st.markdown("")
     
 with row4_3:
-    img_r = Image.open('/home/waymo/data/test/11940460932056521663_1760_000_1780_000_{}_FRONT.jpeg'.format(frame))
-    st.markdown("## Right Camera")
-    st.image(img_r)
+    try:
+        img_r = Image.open('/home/waymo/data/{}/{}/{}/{}_{}_SIDE_RIGHT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment,frame))
+        st.markdown("## Right Camera")
+        st.image(img_r)
+    except:
+        st.markdown("")
 
 
 st.markdown("#")
@@ -111,13 +161,8 @@ if uploaded_img is not None:
     st.image(image, caption='Uploaded Image.', use_column_width=True)
     st.write("")
     st.write("Our Model is running its prediction...")
-    pred_img = generate_prediction_image('tmpImgFile.jpg', rest_api)
-    st.image(pred_img, caption="What herbie sees in the image",use_column_width=True)
-
-st.markdown('''## Try your own video''')
-uploaded_video = st.file_uploader("Upload an image...", type="mp4")
-if uploaded_video is not None:
-    print("Not Implemented")
+    pred_img = generate_prediction_user_image('tmpImgFile.jpg', rest_api)
+    st.image(pred_img, caption="The bouding box predictions",use_column_width=True)
 
 
 st.markdown('#')

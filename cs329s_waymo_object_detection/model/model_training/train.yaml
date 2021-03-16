@@ -10,6 +10,10 @@ category_ids: [1,2,3]
 num_classes: 4 #including background class
 resize: [1152, 768]
 
+# Image 
+nms_thresh: 0.1
+iou_vals: [0.2,0.4,0.6,0.8]
+
 # Datasets
 train_dataset: '/train/curated_datasets/core_dataset/annotations/core_dataset.json'
 test_dataset: '/test/curated_datasets/core_dataset/annotations/core_dataset.json'

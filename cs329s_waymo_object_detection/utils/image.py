@@ -63,8 +63,8 @@ def plot_annotations(img, bbox, labels, scores, confidence_threshold,
                   bbox={'color': colors_map[str(labels[idx])], 'pad': 0},
                   font={'size':500})
 
-        # Add the patch to the Axes
-        ax.add_patch(rect)
+            # Add the patch to the Axes
+            ax.add_patch(rect)
         i+=1
 
     if show==True:
@@ -105,6 +105,7 @@ def write_annotations(model, images_path, write_path, nms_thresh, score_thresh):
         keep = torchvision.ops.nms(bbox,scores,nms_thresh)
         labels = [int(x.detach().to('cpu')) for idx, x in enumerate(labels) if idx in keep]
         bbox = [x.detach().to('cpu') for idx, x in enumerate(bbox) if idx in keep]
+        scores = [x.detach().to('cpu') for idx, x in enumerate(scores) if idx in keep]
         
         
         # Create figure and axes

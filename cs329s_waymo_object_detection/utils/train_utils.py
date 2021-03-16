@@ -62,59 +62,39 @@ def track_metrics(loss, classifier_loss, box_reg_loss, objectness_loss, rpn_loss
             wandb.log({'objectness_loss':objectness_loss})
             wandb.log({'rpn_loss':rpn_loss})
 
-def get_map(pred, gt):
-    T = {}
-    P = {}
 
-    pred_probs = np.array([s['prob'] for s in pred])
-    box_idx_sorted_by_prob = np.argsort(pred_probs)[::-1]
+def classify_record(pred_label, gt_label, iou, iou_thresh):
+  if pred_label==gt_label:
+    if iou >= iou_thresh:
+      return 'TP'
+    else:
+      return 'FP'
+  else:
+      if iou >= iou_thresh:
+        return 'FN' 
+      else:
+        return 'TN'
 
-    for box_idx in box_idx_sorted_by_prob:
-        pred_box = pred[box_idx]
-        pred_class = pred_box['class']
-        pred_x1 = pred_box['x1']
-        pred_x2 = pred_box['x2']
-        pred_y1 = pred_box['y1']
-        pred_y2 = pred_box['y2']
-        pred_prob = pred_box['prob']
-        if pred_class not in P:
-            P[pred_class] = []
-            T[pred_class] = []
-        P[pred_class].append(pred_prob)
-        found_match = False
 
-        for gt_box in gt:
-            gt_class = gt_box['class']
-            gt_x1 = gt_box['x1']
-            gt_x2 = gt_box['x2']
-            gt_y1 = gt_box['y1']
-            gt_y2 = gt_box['y2']
-            gt_seen = gt_box['bbox_matched']
-            if gt_class != pred_class:
-                continue
-            if gt_seen:
-                continue
-            iou = bbox_intersection_over_union([pred_x1, pred_y1, pred_x2, pred_y2], [gt_x1, gt_y1, gt_x2, gt_y2])
-            #iou = data_generators.iou((pred_x1, pred_y1, pred_x2, pred_y2), (gt_x1, gt_y1, gt_x2, gt_y2))
-            if iou >= 0.5:
-                found_match = True
-                gt_box['bbox_matched'] = True
-                break
-            else:
-                continue
+def calc_precision_recall(eval_df, label, iou_thresh):
+  try:
+    tmp_df = eval_df[eval_df['gt_label']==label]
+    tmp_df = tmp_df.sort_values(by='confidence_score', ascending=False).reset_index(drop=True)
+    total_positives = tmp_df.shape[0]
+    tmp_df['classification'] = tmp_df.apply(lambda x: classify_record(x['pred_label'], x['gt_label'], x['iou'], 0.5), axis=1)
 
-        T[pred_class].append(int(found_match))
+    precision = []
+    recall = []
+    counts = {'TP':0,'FP':0,'TN':0,'FN':0}
+    for classification in list(tmp_df['classification']):
+        counts[classification] +=1
+        precision.append(counts['TP']/(counts['TP']+counts['FP']))
+        recall.append(counts['TP']/total_positives)
 
-    for gt_box in gt:
-        if not gt_box['bbox_matched']: #and not gt_box['difficult']:
-            if gt_box['class'] not in P:
-                P[gt_box['class']] = []
-                T[gt_box['class']] = []
+    return precision, recall
+  except:
+    return None, None
 
-            T[gt_box['class']].append(1)
-            P[gt_box['class']].append(0)
-
-    return T, P
 
 def bb_intersection_over_union(boxA, boxB):
     # determine the (x, y)-coordinates of the intersection rectangle

@@ -6,4 +6,5 @@ pillow
 torch
 torchvision
 google-cloud-storage
-herbie-vision
+cs329s_waymo_object_detection
+wandb

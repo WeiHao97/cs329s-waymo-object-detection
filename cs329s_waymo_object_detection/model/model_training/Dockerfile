@@ -1,7 +1,5 @@
 FROM ubuntu:20.04
 
-LABEL maintainer "NVIDIA CORPORATION <cudatools@nvidia.com>"
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gnupg2 curl ca-certificates && \
     curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub | apt-key add - && \
@@ -45,11 +43,13 @@ RUN apt-get update && apt-get install -y \
     libxrender-dev \
     libglib2.0-0 \
     libgl1-mesa-glx \
+    nfs-common\
     ffmpeg
 RUN apt-get update
 
 # credentials and additional requirements
 RUN mkdir -p /home/waymo
+RUN mkdir -p /home/waymo/data
 COPY . /home/waymo
 
 # Install python dependencies
@@ -60,5 +60,9 @@ RUN pip3 install -r /home/waymo/requirements.txt
 COPY . /home/waymo
 RUN sudo chmod -R a+rwx /home/waymo
 
+
+RUN mount 10.108.76.210:/datasets /home/waymo/data
 WORKDIR /home/waymo
 
+
+#ENTRYPOINT ["python", "train.py",""]
