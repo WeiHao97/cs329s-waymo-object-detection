@@ -24,7 +24,7 @@ model = None
 def load_model(model_weights):
     global model
     model = get_custom_backbone_fast_rcnn(4)
-    model.load_state_dict(torch.load('/Users/peterfagan/Downloads/weights_1.pth', map_location=torch.device('cpu')))  # /home/data/waymo/{}'.format(model_weights)
+    model.load_state_dict(torch.load('/home/waymo/data/trained_models/{}'.format(model_weights), map_location=torch.device('cpu'))) 
     model.eval()
 
 
@@ -87,4 +87,5 @@ if __name__ == "__main__":
         "please wait until server has fully started"))
     load_model('weights_13.pth') #hard-code for now
     device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    app.run(host='0.0.0.0', debug=False)
+    model.to(device)
+    app.run(host='0.0.0.0', port=5000,debug=False)

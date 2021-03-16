@@ -1,15 +1,20 @@
 # Specify the zone for this resource
---zone:  us-central1-a
+--zone:  us-west1-a
 
+# --accelerator: 
+#   type: nvidia-tesla-t4
+#   count: 1
+
+--machine-type: e2-standard-8
 # autoscaling
 --num-nodes: 3
 --enable-autoscaling:
---min-nodes: 1
---max-nodes: 10
+--min-nodes: 4
+--max-nodes: 8
 
 # # auto provisioning:
 --enable-autoprovisioning: 
---max-cpu: 8
---max-memory: 32
---min-cpu: 3
---min-memory: 16
+--max-cpu: 16
+--max-memory: 64
+--min-cpu: 8
+--min-memory: 32

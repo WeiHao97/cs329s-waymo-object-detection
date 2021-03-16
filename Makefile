@@ -1,5 +1,5 @@
 .PHONY: run-streamlit run-streamlit-container-locally gcloud-deploy-streamlit \
-		gcloud-deploy-web-application gcloud-tear-down-prediction-web-application \
+		gcloud-deploy-prediction-application gcloud-tear-down-prediction-web-application \
 		gcloud-run-waymo-data-processing gcloud-train-job \
 		gcloud-train-sweep gcloud-deploy-app
 
@@ -10,16 +10,17 @@ run-streamlit-container-locally:
 	@docker run -p 8080:8080 --cap-add SYS_ADMIN --device /dev/fuse herbie_vision
 
 
-gcloud-deploy-web-application:
+gcloud-deploy-prediction-application:
 	@gcloud container clusters create prediction --flags-file ./config/model_serving/cluster_config.yaml
 	@gcloud container clusters get-credentials prediction --zone us-central1-a --project waymo-2d-object-detection
-	@kubectl apply -f ./config/model_serving/basic_pod.yaml
-	@echo 'Wating for pods to be created...'
-	@sleep 240
-	@kubectl expose pod cs329s-prediction --type=LoadBalancer --port=80 --target-port 5000
+	@kubectl apply -f ./config/model_serving/persistent_volume.yaml
+	@kubectl apply -f ./config/model_serving/persistent_volume_claim.yaml
+	@kubectl apply -f ./config/model_serving/kubernetes_deployment.yaml
+	@kubectl expose deployment prediction --type=LoadBalancer --name=prediction-service --port 80 --target-port 5000
 	@echo 'Wating for external ip to be initialized...'
-	@sleep 240
-	@sed -i .bak "s|.*REST_API.*|ENV REST_API=\"http://$$(kubectl get services cs329s-prediction -o json | jq '.status.loadBalancer.ingress | to_entries | .[0].value.ip' | tr -d '"')/predict\"|" ./cs329s_waymo_object_detection/streamlit_app/Dockerfile
+	@sleep 60
+	@kubectl get services
+	@sed -i .bak "s|.*REST_API.*|ENV REST_API=\"http://$$(kubectl get services prediction-service -o json | jq '.status.loadBalancer.ingress | to_entries | .[0].value.ip' | tr -d '"')/predict\"|" ./cs329s_waymo_object_detection/streamlit_app/Dockerfile
 
 gcloud-deploy-app:
 	@gcloud container clusters create streamlit --flags-file ./config/streamlit_deployment/cluster_config.yaml
@@ -28,9 +29,10 @@ gcloud-deploy-app:
 	@kubectl apply -f ./config/streamlit_deployment/persistent_volume_claim.yaml
 	@sleep 15
 	@kubectl apply -f ./config/streamlit_deployment/kubernetes_deployment.yaml
-	@sleep 60
 	@kubectl expose deployment streamlitweb --type=LoadBalancer --name=my-service
+	@sleep 60
 	@kubectl get services
+
 
 
 gcloud-tear-down-prediction-web-application:
@@ -57,9 +59,8 @@ gcloud-train-job:
 	  --image-family=pytorch-latest-cpu \
 	  --image-project=deeplearning-platform-release \
 	  --machine-type e2-standard-8 \
-	  --accelerators="type=nvidia-tesla-t4,count=1" \
+	  --accelerator="type=nvidia-tesla-t4,count=1" \
 	  --boot-disk-size 100 \
-
 	  --metadata-from-file startup-script=mount.sh
 	@sleep 120
 	@gcloud compute scp --recurse /Users/peterfagan/Code/herbie-vision/herbie_vision/model/model_training/ pytorch-cpu:/tmp

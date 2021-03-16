@@ -4,18 +4,22 @@ from PIL import Image
 from cs329s_waymo_object_detection.utils.image import plot_annotations
 
 import requests
+import multiprocessing
+from itertools import product
 import json
 import numpy as np
 from glob import glob
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
+import matplotlib.patches as patches
 
 
-def generate_prediction_user_image(imgfile, rest_api):
+def generate_prediction_user_image(imgfile, rest_api, image_path, confidence_threshold=0.6):
     """
     This function requests prediction from rest_api and 
     plots bounding boxes of result over image.
     """
-    save_path = 'prediction.jpeg'
-
     # Make request to prediction api
     files = {'image': open(imgfile, 'rb')}
     response = requests.post(rest_api, files=files)
@@ -29,9 +33,22 @@ def generate_prediction_user_image(imgfile, rest_api):
     # Create new figure
     img = Image.open(imgfile)
     pred_fig = plot_annotations(img, boxes, labels, scores, 
-                                0.6, save_fig_path=save_path)
+                                confidence_threshold, save_fig_path=image_path)
 
-    return save_path
+    return pred_fig
+
+
+def return_prediction(predictions, imgfile, camera):
+        annotations = predictions[camera]
+        boxes = [np.array(x).astype(float) for x in annotations['boxes']]
+        labels = np.array(annotations['labels']).astype('int')
+        scores = np.array(annotations['scores']).astype('float')
+
+        # Create new figure
+        img = Image.open(imgfile)
+        pred_fig = plot_annotations(img, boxes, labels, scores, 
+                                    0.6, save_fig_path=save_path)
+        return pred_fig
 
 
 def generate_prediction_all_cameras(imgfiles, rest_api):
@@ -39,26 +56,24 @@ def generate_prediction_all_cameras(imgfiles, rest_api):
     This function requests prediction from rest_api and 
     plots bounding boxes of result over image.
     """
-    save_path = 'prediction.jpeg'
-
     # Make request to prediction api
     files = {'images': [open(imgfile, 'rb') for image in imgfiles]}
     response = requests.post(rest_api, files=files)
 
     # Parse response
-    annotations = json.loads(response.content)
-    boxes = [np.array(x).astype(float) for x in annotations['boxes']]
-    labels = np.array(annotations['labels']).astype('int')
-    scores = np.array(annotations['scores']).astype('float')
+    predictions = json.loads(response.content)
+    cameras = ['FRONT_LEFT','FRONT','FRONT_RIGHT','SIDE_LEFT','SIDE_RIGHT']
 
-    # Create new figure
-    img = Image.open(imgfile)
-    pred_fig = plot_annotations(img, boxes, labels, scores, 
-                                0.6, save_fig_path=save_path)
+    pool = multiprocessing.Pool()
+    pool.starmap(return_prediction, product())
+    # Apply multi processing here on returned lists:
+    
 
     return save_path
-################################################################################
 
+
+################################################################################
+rest_api = 'http://35.230.120.70/predict'
 st.set_page_config(page_title="Awesome Object Detection",  
                     page_icon="car",
                     layout="wide")
@@ -86,6 +101,7 @@ row2_1, row2_2, row2_3 = st.beta_columns((1.5,1.5,1.5))
 location_map = {'San Francisco':'location_sf','Phoenix':'location_phx','Other':'location_other'} 
 tod_map = {'Day':'day','Dawn/Dusk':'dawn_dusk','Night':'night'} 
 weather_map = {'Sunny':'sunny', 'Rain':'rain'}
+
 with row2_1:
     location = st.selectbox('Location', ('San Francisco', 'Phoenix', 'Other'))
 with row2_2:
@@ -96,32 +112,30 @@ with row2_3:
 # Frame Slider
 frame = st.slider("Frame",0,180,0)
 st.markdown("#")
-try:
-    segments = list(glob('/home/waymo/data/{}/{}/{}/*/'.format(location_map[location],tod_map[tod], weather_map[weather])))
-    segment = segments[np.random.randint(0,len(segments))]
-except:
-    segment = None
+
+segments = [x.split('/')[-2] for x in glob('/home/waymo/data/{}/{}/{}/*/'.format(location_map[location],tod_map[tod], weather_map[weather]))]
+segment = segments[np.random.randint(0,len(segments))]
 #Plotting Driving Segment With Predictions
 row3_1, row3_2, row3_3 = st.beta_columns((1.5,1.5,1.5))
 with row3_1:
     try:
-        img_fl = Image.open('/home/waymo/data/{}/{}/{}/{}_{}_FRONT_LEFT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment,frame))
+        img_fl = Image.open('/home/waymo/data/{}/{}/{}/{}/{}_{}_FRONT_LEFT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment, segment,frame))
         st.markdown("## Front Left Camera")
         st.image(img_fl)
     except:
         st.markdown("")
 
-
 with row3_2:
     try:
-        img_f = Image.open('/home/waymo/data/{}/{}/{}/{}_{}_FRONT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment,frame))
+        img_f = Image.open('/home/waymo/data/{}/{}/{}/{}/{}_{}_FRONT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment, segment,frame))
         st.markdown("## Front Center Camera")
-        st.image(img_f)
+        pred_img_f = generate_prediction_user_image('/home/waymo/data/{}/{}/{}/{}/{}_{}_FRONT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment, segment,frame), rest_api, '/home/tmp_f.jpeg')
+        st.image(pred_img_f)
     except:
         st.markdown("")
 with row3_3:
     try:
-        img_fr = Image.open('/home/waymo/data/{}/{}/{}/{}_{}_FRONT_RIGHT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment,frame))
+        img_fr = Image.open('/home/waymo/data/{}/{}/{}/{}/{}_{}_SIDE_LEFT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment, segment,frame))
         st.markdown("## Front Right Camera")
         st.image(img_fr)
     except:
@@ -130,7 +144,7 @@ with row3_3:
 row4_1, row4_2, row4_3 = st.beta_columns((1.5, 1.5,1.5))
 with row4_1:
     try:
-        img_l = Image.open('/home/waymo/data/{}/{}/{}/{}_{}_SIDE_LEFT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment,frame))
+        img_l = Image.open('/home/waymo/data/{}/{}/{}/{}/{}_{}_FRONT_RIGHT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment, segment,frame))
         st.markdown("## Left Camera")
         st.image(img_l)
     except:
@@ -141,7 +155,7 @@ with row4_2:
     
 with row4_3:
     try:
-        img_r = Image.open('/home/waymo/data/{}/{}/{}/{}_{}_SIDE_RIGHT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment,frame))
+        img_r = Image.open('/home/waymo/data/{}/{}/{}/{}/{}_{}_SIDE_RIGHT.jpeg'.format(location_map[location],tod_map[tod], weather_map[weather], segment, segment,frame))
         st.markdown("## Right Camera")
         st.image(img_r)
     except:
@@ -161,8 +175,8 @@ if uploaded_img is not None:
     st.image(image, caption='Uploaded Image.', use_column_width=True)
     st.write("")
     st.write("Our Model is running its prediction...")
-    pred_img = generate_prediction_user_image('tmpImgFile.jpg', rest_api)
-    st.image(pred_img, caption="The bouding box predictions",use_column_width=True)
+    pred_img = generate_prediction_user_image('tmpImgFile.jpg', rest_api, '/home/tmp_usr.jpeg')
+    st.image(pred_img)
 
 
 st.markdown('#')

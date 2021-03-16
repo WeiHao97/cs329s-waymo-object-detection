@@ -1,0 +1,16 @@
+# Specify the zone for this resource
+--zone:  us-central1-a
+
+--machine-type: e2-highmem-8
+# autoscaling
+--num-nodes: 1
+--enable-autoscaling:
+--min-nodes: 1
+--max-nodes: 1
+
+# # auto provisioning:
+# --enable-autoprovisioning: 
+# --max-cpu: 8
+# --max-memory: 64
+# --min-cpu: 8
+# --min-memory: 64

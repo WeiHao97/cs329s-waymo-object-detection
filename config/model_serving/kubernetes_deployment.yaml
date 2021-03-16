@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prediction
+  labels:
+    app: prediction
+spec:
+  selector:
+    matchLabels:
+      app: prediction
+      tier: web
+  template:
+    metadata:
+      labels:
+        app: prediction
+        tier: web
+    spec:
+      containers:
+      - name: prediction
+        image: gcr.io/waymo-2d-object-detection/prediction:latest
+        ports:
+        - containerPort: 5000
+        volumeMounts:
+        - mountPath: /home/waymo/data
+          name: datasets
+      volumes:
+        - name: datasets
+          persistentVolumeClaim:
+            claimName: fileserver-claim
+            readOnly: true
+
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: flask-service
+# spec:
+#   ports:
+#   - port: 80
+#     targetPort: 5000
+#     name: http
+#   selector:
+#     app: flask
