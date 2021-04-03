@@ -12,7 +12,6 @@ Thanks to the Waymo Open dataset we have created a ML system which,
 </p>
   
 <p>  
-This project is currently under construction 🏗, below you can find the current status of items we are working on:
 
 MVP
 - [x] Process and store Waymo data in Coco format on GCP
@@ -25,8 +24,7 @@ MVP
 Demo
 - [x] Add exploratory features to the web application
 - [x] Enhance the training and evaluation processes (submission of training jobs)
-- [ ] Create script to compress and deploy model on Nvidia Jetson Nano
-- [ ] Write report
+- [x] Prepare final application and demo
 </p>
 
 <H1>Data</H1>
@@ -36,6 +34,3 @@ There are two main sources of data for this project:
 - **Waymo Dataset:** https://waymo.com/open/
 - **Custom Datasets:** Generated using the Nvidia Jetson Nano
 <\p>
-
-<H1>Web Application</H1>
-<img src="/assets/webappupdated.jpg" width="800px">
